@@ -1,7 +1,5 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Search, User, ShoppingCart, Heart, LogOut, Menu, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -9,6 +7,8 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useMainCart } from '@/hooks/useSupabaseCart';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
+import GlobalSearchModal from '@/components/GlobalSearchModal';
+import { useSearchShortcut } from '@/hooks/useSearchShortcut';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +32,7 @@ const Header = () => {
   const { cartItems } = useMainCart();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   
   const isActive = (path: string) => location.pathname === path;
 
@@ -42,15 +42,6 @@ const Header = () => {
       navigate('/');
     } catch (error) {
       console.error('Erreur de déconnexion:', error);
-    }
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      navigate(`/produits?search=${encodeURIComponent(searchTerm.trim())}`);
-      setSearchTerm('');
-      setIsMenuOpen(false);
     }
   };
 
@@ -94,173 +85,187 @@ const Header = () => {
     </>
   );
   
+  // Add keyboard shortcut
+  useSearchShortcut(() => setIsSearchModalOpen(true));
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <img 
-              src="/lovable-uploads/fd4068e4-5395-416a-a0d9-2f2084813da4.png" 
-              alt="Recette+" 
-              className="h-8 sm:h-12 w-auto"
-            />
-          </Link>
-
-          {/* Navigation Desktop */}
-          <nav className="hidden lg:flex items-center space-x-8">
-            <NavigationLinks />
-          </nav>
-
-          {/* Search Bar - Hidden on mobile */}
-          <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
-            <form onSubmit={handleSearch} className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input 
-                placeholder="Rechercher des recettes, produits..." 
-                className="pl-10 pr-4 bg-gray-50 border-gray-200 focus:bg-white"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+    <>
+      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 items-center justify-between">
+            {/* Logo */}
+            <Link to="/" className="flex items-center space-x-2">
+              <img 
+                src="/lovable-uploads/fd4068e4-5395-416a-a0d9-2f2084813da4.png" 
+                alt="Recette+" 
+                className="h-8 sm:h-12 w-auto"
               />
-            </form>
-          </div>
+            </Link>
 
-          {/* Actions */}
-          <div className="flex items-center space-x-1 sm:space-x-2">
-            {/* Favorites - Desktop only */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="hidden md:flex"
-              onClick={() => navigate('/favoris')}
-            >
-              <Heart className="h-5 w-5" />
-            </Button>
-            
-            {/* Cart with badge */}
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => navigate('/panier')}
-              className="relative"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {cartItemsCount > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0 bg-orange-500 hover:bg-orange-600"
-                >
-                  {cartItemsCount > 99 ? '99+' : cartItemsCount}
-                </Badge>
-              )}
-            </Button>
-            
-            {currentUser ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    {currentUser.user_metadata?.avatar_url ? (
-                      <img 
-                        src={currentUser.user_metadata.avatar_url} 
-                        alt="Avatar" 
-                        className="h-6 w-6 rounded-full"
-                      />
-                    ) : (
-                      <User className="h-5 w-5" />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{currentUser.user_metadata?.display_name || currentUser.user_metadata?.full_name || 'Utilisateur'}</p>
-                    <p className="text-xs text-gray-500">{currentUser.email}</p>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Mon profil</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/panier')}>
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    <span>Mon panier</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/favoris')} className="md:hidden">
-                    <Heart className="mr-2 h-4 w-4" />
-                    <span>Mes favoris</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Se déconnecter</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
-                <Button variant="ghost" size="icon" onClick={() => navigate('/login')}>
-                  <User className="h-5 w-5" />
-                </Button>
-                <Button 
-                  onClick={() => navigate('/login')}
-                  className="bg-orange-500 hover:bg-orange-600 text-white hidden sm:inline-flex text-sm px-3 py-2"
-                >
-                  Connexion
-                </Button>
-              </>
-            )}
+            {/* Navigation Desktop */}
+            <nav className="hidden lg:flex items-center space-x-8">
+              <NavigationLinks />
+            </nav>
 
-            {/* Mobile Menu */}
-            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <SheetHeader>
-                  <SheetTitle>Menu</SheetTitle>
-                </SheetHeader>
-                <div className="flex flex-col space-y-4 mt-6">
-                  {/* Search on mobile */}
-                  <form onSubmit={handleSearch} className="relative w-full md:hidden">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input 
-                      placeholder="Rechercher..." 
-                      className="pl-10 pr-4"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </form>
-                  
-                  {/* Navigation Links */}
-                  <nav className="flex flex-col space-y-2">
-                    <NavigationLinks 
-                      mobile={true} 
-                      onLinkClick={() => setIsMenuOpen(false)} 
-                    />
-                  </nav>
-
-                  {/* User Actions for mobile */}
-                  {!currentUser && (
-                    <div className="pt-4 border-t">
-                      <Button 
-                        onClick={() => {
-                          navigate('/login');
-                          setIsMenuOpen(false);
-                        }}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-                      >
-                        Connexion
-                      </Button>
-                    </div>
-                  )}
+            {/* Search Button - Replaces the search bar */}
+            <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
+              <Button
+                variant="outline"
+                onClick={() => setIsSearchModalOpen(true)}
+                className="w-full justify-start text-gray-500 font-normal h-10 px-4 bg-gray-50 hover:bg-gray-100 border-gray-200"
+              >
+                <Search className="h-4 w-4 mr-3" />
+                <span>Rechercher des recettes, produits...</span>
+                <div className="ml-auto">
+                  <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                    <span className="text-xs">⌘</span>K
+                  </kbd>
                 </div>
-              </SheetContent>
-            </Sheet>
+              </Button>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              {/* Search button for mobile */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="md:hidden"
+                onClick={() => setIsSearchModalOpen(true)}
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+
+              {/* Favorites - Desktop only */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="hidden md:flex"
+                onClick={() => navigate('/favoris')}
+              >
+                <Heart className="h-5 w-5" />
+              </Button>
+              
+              {/* Cart with badge */}
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate('/panier')}
+                className="relative"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {cartItemsCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0 bg-orange-500 hover:bg-orange-600"
+                  >
+                    {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                  </Badge>
+                )}
+              </Button>
+              
+              {currentUser ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      {currentUser.user_metadata?.avatar_url ? (
+                        <img 
+                          src={currentUser.user_metadata.avatar_url} 
+                          alt="Avatar" 
+                          className="h-6 w-6 rounded-full"
+                        />
+                      ) : (
+                        <User className="h-5 w-5" />
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="px-2 py-1.5">
+                      <p className="text-sm font-medium">{currentUser.user_metadata?.display_name || currentUser.user_metadata?.full_name || 'Utilisateur'}</p>
+                      <p className="text-xs text-gray-500">{currentUser.email}</p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate('/profile')}>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Mon profil</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/panier')}>
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      <span>Mon panier</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/favoris')} className="md:hidden">
+                      <Heart className="mr-2 h-4 w-4" />
+                      <span>Mes favoris</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Se déconnecter</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <>
+                  <Button variant="ghost" size="icon" onClick={() => navigate('/login')}>
+                    <User className="h-5 w-5" />
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/login')}
+                    className="bg-orange-500 hover:bg-orange-600 text-white hidden sm:inline-flex text-sm px-3 py-2"
+                  >
+                    Connexion
+                  </Button>
+                </>
+              )}
+
+              {/* Mobile Menu */}
+              <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="lg:hidden">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                  <SheetHeader>
+                    <SheetTitle>Menu</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col space-y-4 mt-6">
+                    {/* Navigation Links */}
+                    <nav className="flex flex-col space-y-2">
+                      <NavigationLinks 
+                        mobile={true} 
+                        onLinkClick={() => setIsMenuOpen(false)} 
+                      />
+                    </nav>
+
+                    {/* User Actions for mobile */}
+                    {!currentUser && (
+                      <div className="pt-4 border-t">
+                        <Button 
+                          onClick={() => {
+                            navigate('/login');
+                            setIsMenuOpen(false);
+                          }}
+                          className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                        >
+                          Connexion
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Global Search Modal */}
+      <GlobalSearchModal 
+        open={isSearchModalOpen} 
+        onOpenChange={setIsSearchModalOpen} 
+      />
+    </>
   );
 };
 
