@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Search, User, ShoppingCart, Heart, LogOut, Menu, X } from 'lucide-react';
@@ -49,6 +50,17 @@ const Header = () => {
 
   const NavigationLinks = ({ mobile = false, onLinkClick = () => {} }) => (
     <>
+      <Link 
+        to="/about" 
+        className={cn(
+          "text-sm font-medium transition-colors hover:text-orange-500",
+          isActive("/about") ? "text-orange-500" : "text-gray-600",
+          mobile && "block py-2 text-base"
+        )}
+        onClick={onLinkClick}
+      >
+        À propos
+      </Link>
       <Link 
         to="/recettes" 
         className={cn(

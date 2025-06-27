@@ -1,15 +1,13 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChefHat, Users, Star, ArrowRight, Play, Smartphone, Download, Clock, Award, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import Footer from '@/components/Footer';
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       {/* Hero Section */}
       <section className="relative py-12 md:py-24 px-4 overflow-hidden">
         {/* Background decorative elements */}
@@ -24,7 +22,7 @@ const Home = () => {
               <img 
                 src="/lovable-uploads/fd4068e4-5395-416a-a0d9-2f2084813da4.png" 
                 alt="Recette+" 
-                className="h-32 md:h-36 w-auto drop-shadow-lg"
+                className="h-36 md:h-40 w-auto drop-shadow-lg"
               />
             </div>
           </div>
@@ -38,21 +36,21 @@ const Home = () => {
             Recettes traditionnelles, produits locaux et vidéos exclusives pour une expérience culinaire unique.
           </p>
           
-          {/* App promotion banner */}
-          <div className="bg-gradient-to-r from-orange-400 via-orange-500 to-amber-500 rounded-2xl md:rounded-3xl p-6 md:p-8 mb-8 md:mb-12 text-white shadow-2xl animate-fade-in transform hover:scale-105 transition-all duration-300 mx-4">
-            <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-6 mb-6">
+          {/* App promotion banner - Improved mobile responsivity */}
+          <div className="bg-gradient-to-r from-orange-400 via-orange-500 to-amber-500 rounded-2xl md:rounded-3xl p-4 md:p-8 mb-8 md:mb-12 text-white shadow-2xl animate-fade-in transform hover:scale-105 transition-all duration-300 mx-4">
+            <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-6 mb-4 md:mb-6">
               <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
-                <Smartphone className="h-8 md:h-10 w-8 md:w-10" />
+                <Smartphone className="h-6 md:h-10 w-6 md:w-10" />
               </div>
               <div className="text-center md:text-left">
-                <h3 className="text-xl md:text-2xl font-bold mb-2">Application mobile disponible !</h3>
-                <p className="text-base md:text-lg opacity-90">Emportez vos recettes partout avec vous</p>
+                <h3 className="text-lg md:text-2xl font-bold mb-1 md:mb-2">Application mobile disponible !</h3>
+                <p className="text-sm md:text-lg opacity-90">Emportez vos recettes partout avec vous</p>
               </div>
             </div>
-            <Link to="/download-app">
-              <Button className="bg-white text-orange-600 hover:bg-gray-50 hover:text-orange-700 font-bold text-base md:text-lg px-6 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                <Download className="h-4 md:h-5 w-4 md:w-5 mr-2 md:mr-3" />
-                Télécharger maintenant
+            <Link to="/download-app" className="block">
+              <Button className="w-full sm:w-auto bg-white text-orange-600 hover:bg-gray-50 hover:text-orange-700 font-bold text-sm md:text-lg px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                <Download className="h-4 md:h-5 w-4 md:w-5 mr-2 md:mr-3 flex-shrink-0" />
+                <span className="whitespace-nowrap">Télécharger maintenant</span>
               </Button>
             </Link>
           </div>
@@ -207,8 +205,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

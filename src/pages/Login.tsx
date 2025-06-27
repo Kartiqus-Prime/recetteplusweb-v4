@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff, Mail, Lock, ChefHat } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -69,12 +69,15 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center mb-4">
-            <ChefHat className="h-8 w-8 text-orange-500 mr-2" />
-            <span className="text-2xl font-bold text-orange-600">Recette+</span>
+          <div className="flex items-center justify-center mb-6">
+            <img 
+              src="/lovable-uploads/fd4068e4-5395-416a-a0d9-2f2084813da4.png" 
+              alt="Recette+" 
+              className="h-16 w-auto"
+            />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">Connexion</CardTitle>
           <CardDescription>
@@ -87,7 +90,7 @@ const Login = () => {
             onClick={handleGoogleLogin}
             disabled={isGoogleLoading || isLoading}
             variant="outline"
-            className="w-full"
+            className="w-full hover:bg-orange-50 border-orange-200"
           >
             <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -122,7 +125,7 @@ const Login = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading || isGoogleLoading}
-                  className="pl-10"
+                  className="pl-10 border-orange-200 focus:border-orange-500 focus:ring-orange-500"
                 />
               </div>
             </div>
@@ -141,7 +144,7 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading || isGoogleLoading}
-                  className="pl-10 pr-10"
+                  className="pl-10 pr-10 border-orange-200 focus:border-orange-500 focus:ring-orange-500"
                 />
                 <Button
                   type="button"
@@ -171,7 +174,7 @@ const Login = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-orange-500 hover:bg-orange-600"
+              className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-lg"
               disabled={isLoading || isGoogleLoading}
             >
               {isLoading ? "Connexion..." : "Se connecter"}

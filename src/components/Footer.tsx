@@ -14,7 +14,7 @@ const Footer = () => {
               <img 
                 src="/lovable-uploads/fd4068e4-5395-416a-a0d9-2f2084813da4.png" 
                 alt="Recette+" 
-                className="h-8 w-auto filter brightness-0 invert"
+                className="h-12 w-auto filter brightness-0 invert"
               />
             </div>
             <p className="text-gray-300 mb-4">
