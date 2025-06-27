@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { useUserProfile, useUpdateSupabaseProfile } from '@/hooks/useSupabaseProfiles';
+import { useSupabaseProfile, useUpdateSupabaseProfile } from '@/hooks/useSupabaseProfiles';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -11,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 
 const Profile = () => {
   const { currentUser } = useAuth();
-  const { data: profile, isLoading } = useUserProfile();
+  const { data: profile, isLoading } = useSupabaseProfile(currentUser?.id);
   const updateProfile = useUpdateSupabaseProfile();
   const updateNewsletterPref = useUpdateUserNewsletterPreference();
 
