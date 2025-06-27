@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { Search, SlidersHorizontal, Package, Loader2 } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { useSupabaseProducts } from '@/hooks/useSupabaseProducts';
 import {
@@ -17,26 +17,26 @@ import {
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-
+  const [priceRange, setPriceRange] = useState('all');
   const { data: products = [], isLoading, error } = useSupabaseProducts();
 
-  const categories = [
-    'Légumes', 'Fruits', 'Viandes', 'Poissons', 'Fromages', 
-    'Herbes', 'Épices', 'Huiles', 'Conserves', 'Bio'
-  ];
+  const categories = [...new Set(products.map(product => product.category))];
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
+    const matchesPrice = priceRange === 'all' || 
+      (priceRange === 'low' && product.price < 1000) ||
+      (priceRange === 'medium' && product.price >= 1000 && product.price < 5000) ||
+      (priceRange === 'high' && product.price >= 5000);
+    return matchesSearch && matchesCategory && matchesPrice && product.in_stock;
   });
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-orange-500" />
           <p className="text-gray-600">Chargement des produits...</p>
         </div>
       </div>
@@ -45,40 +45,42 @@ const Products = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">Erreur lors du chargement des produits</p>
-          <Button onClick={() => window.location.reload()}>Réessayer</Button>
+          <Button onClick={() => window.location.reload()} className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white">
+            Réessayer
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Produits Frais
+        <div className="mb-8 text-center animate-fade-in">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-4">
+            Nos Produits
           </h1>
-          <p className="text-lg text-gray-600">
-            Ingrédients de qualité sélectionnés par nos chefs pour vos recettes
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Plus de {products.length} ingrédients authentiques livrés directement chez vous
           </p>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-8 animate-fade-in">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <Input 
                   placeholder="Rechercher un produit..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-12 text-lg border-2 focus:border-orange-500"
                 />
               </div>
             </div>
@@ -86,8 +88,8 @@ const Products = () => {
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Catégorie" />
+                <SelectTrigger className="w-full sm:w-48 h-12">
+                  <SelectValue placeholder="Toutes les catégories" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toutes les catégories</SelectItem>
@@ -99,8 +101,20 @@ const Products = () => {
                 </SelectContent>
               </Select>
 
-              <Button variant="outline" className="w-full sm:w-auto">
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
+              <Select value={priceRange} onValueChange={setPriceRange}>
+                <SelectTrigger className="w-full sm:w-48 h-12">
+                  <SelectValue placeholder="Tous les prix" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les prix</SelectItem>
+                  <SelectItem value="low">Moins de 1 000 F</SelectItem>
+                  <SelectItem value="medium">1 000 - 5 000 F</SelectItem>
+                  <SelectItem value="high">Plus de 5 000 F</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button variant="outline" className="w-full sm:w-auto h-12 hover:bg-orange-50 border-orange-200">
+                <SlidersHorizontal className="h-5 w-5 mr-2" />
                 Plus de filtres
               </Button>
             </div>
@@ -108,31 +122,42 @@ const Products = () => {
         </div>
 
         {/* Quick Categories */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-3 mb-8 justify-center animate-fade-in">
           <Badge 
             variant={selectedCategory === 'all' ? 'default' : 'outline'} 
-            className="cursor-pointer hover:bg-orange-500 hover:text-white"
+            className="cursor-pointer hover:bg-orange-500 hover:text-white transition-all duration-300 px-4 py-2 text-sm font-semibold bg-orange-500 text-white"
             onClick={() => setSelectedCategory('all')}
           >
-            Tous
+            Tous ({products.filter(p => p.in_stock).length})
           </Badge>
-          {categories.slice(0, 6).map((category) => (
-            <Badge 
-              key={category}
-              variant={selectedCategory === category ? 'default' : 'outline'}
-              className="cursor-pointer hover:bg-orange-500 hover:text-white"
-              onClick={() => setSelectedCategory(category)}
-            >
-              {category}
-            </Badge>
-          ))}
+          {categories.slice(0, 6).map((category) => {
+            const count = products.filter(p => p.category === category && p.in_stock).length;
+            return (
+              <Badge 
+                key={category}
+                variant={selectedCategory === category ? 'default' : 'outline'}
+                className="cursor-pointer hover:bg-orange-500 hover:text-white transition-all duration-300 px-4 py-2 text-sm font-semibold"
+                onClick={() => setSelectedCategory(category)}
+                style={selectedCategory === category ? { backgroundColor: '#F97316', color: 'white' } : {}}
+              >
+                {category} ({count})
+              </Badge>
+            );
+          })}
         </div>
 
         {/* Results Header */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-gray-600">
-            {filteredProducts.length} produits disponibles
-          </p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-4">
+            <p className="text-gray-600 text-lg">
+              <span className="font-semibold text-orange-600">{filteredProducts.length}</span> produit{filteredProducts.length > 1 ? 's' : ''} trouvé{filteredProducts.length > 1 ? 's' : ''}
+            </p>
+            {searchTerm && (
+              <Badge variant="secondary" className="px-3 py-1">
+                Recherche: "{searchTerm}"
+              </Badge>
+            )}
+          </div>
           <Select defaultValue="popular">
             <SelectTrigger className="w-48">
               <SelectValue />
@@ -142,48 +167,49 @@ const Products = () => {
               <SelectItem value="price-asc">Prix croissant</SelectItem>
               <SelectItem value="price-desc">Prix décroissant</SelectItem>
               <SelectItem value="rating">Mieux notés</SelectItem>
-              <SelectItem value="newest">Nouveautés</SelectItem>
+              <SelectItem value="name">Nom A-Z</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* Product Grid */}
+        {/* Products Grid */}
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fade-in">
             {filteredProducts.map((product) => (
               <ProductCard 
                 key={product.id}
                 id={product.id}
                 name={product.name}
                 price={product.price}
-                image={product.image || 'https://images.unsplash.com/photo-1506617420156-8e4536971650?w=400'}
-                category={product.category}
+                image={product.image || 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=300'}
                 unit={product.unit}
-                inStock={product.in_stock ?? true}
+                category={product.category}
                 rating={product.rating || 0}
+                inStock={product.in_stock}
                 promotion={product.promotion}
               />
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">Aucun produit trouvé avec ces critères</p>
-            <Button 
-              onClick={() => {
-                setSearchTerm('');
-                setSelectedCategory('all');
-              }}
-              variant="outline"
-            >
-              Réinitialiser les filtres
-            </Button>
+          <div className="text-center py-16">
+            <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Package className="h-12 w-12 text-orange-500" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">Aucun produit trouvé</h3>
+            <p className="text-gray-500">
+              {searchTerm 
+                ? `Aucun produit ne correspond à "${searchTerm}"`
+                : "Aucun produit disponible dans cette catégorie"
+              }
+            </p>
           </div>
         )}
 
         {/* Load More */}
-        {filteredProducts.length > 12 && (
-          <div className="text-center mt-12">
-            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white">
+        {filteredProducts.length > 0 && filteredProducts.length >= 16 && (
+          <div className="text-center mt-16">
+            <Button size="lg" className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 text-lg font-semibold transform hover:scale-105 transition-all duration-300">
+              <Package className="h-5 w-5 mr-2" />
               Charger plus de produits
             </Button>
           </div>

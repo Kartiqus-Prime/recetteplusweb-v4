@@ -39,9 +39,9 @@ const Videos = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-orange-500" />
           <p className="text-gray-600">Chargement des vidéos...</p>
         </div>
       </div>
@@ -50,17 +50,19 @@ const Videos = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">Erreur lors du chargement des vidéos</p>
-          <Button onClick={() => window.location.reload()}>Réessayer</Button>
+          <Button onClick={() => window.location.reload()} className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white">
+            Réessayer
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8 text-center animate-fade-in">
@@ -73,7 +75,7 @@ const Videos = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 animate-fade-in">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-8 animate-fade-in">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">
@@ -104,7 +106,7 @@ const Videos = () => {
                 </SelectContent>
               </Select>
 
-              <Button variant="outline" className="w-full sm:w-auto h-12">
+              <Button variant="outline" className="w-full sm:w-auto h-12 hover:bg-orange-50 border-orange-200">
                 <SlidersHorizontal className="h-5 w-5 mr-2" />
                 Plus de filtres
               </Button>
@@ -116,7 +118,7 @@ const Videos = () => {
         <div className="flex flex-wrap gap-3 mb-8 justify-center animate-fade-in">
           <Badge 
             variant={selectedCategory === 'all' ? 'default' : 'outline'} 
-            className="cursor-pointer hover:bg-orange-500 hover:text-white transition-all duration-300 px-4 py-2 text-sm font-semibold"
+            className="cursor-pointer hover:bg-orange-500 hover:text-white transition-all duration-300 px-4 py-2 text-sm font-semibold bg-orange-500 text-white"
             onClick={() => setSelectedCategory('all')}
           >
             Toutes ({videos.length})
@@ -129,6 +131,7 @@ const Videos = () => {
                 variant={selectedCategory === category ? 'default' : 'outline'}
                 className="cursor-pointer hover:bg-orange-500 hover:text-white transition-all duration-300 px-4 py-2 text-sm font-semibold"
                 onClick={() => setSelectedCategory(category)}
+                style={selectedCategory === category ? { backgroundColor: '#F97316', color: 'white' } : {}}
               >
                 {category} ({count})
               </Badge>
@@ -182,8 +185,8 @@ const Videos = () => {
           </div>
         ) : (
           <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Play className="h-12 w-12 text-gray-400" />
+            <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Play className="h-12 w-12 text-orange-500" />
             </div>
             <h3 className="text-xl font-semibold text-gray-600 mb-2">Aucune vidéo trouvée</h3>
             <p className="text-gray-500">
