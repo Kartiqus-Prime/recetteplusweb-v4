@@ -1,30 +1,79 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 24 100% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 30 40% 96%;
+    --secondary-foreground: 24 100% 25%;
+    --muted: 30 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 30 60% 92%;
+    --accent-foreground: 24 100% 30%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 30 20% 90%;
+    --input: 30 20% 90%;
+    --ring: 24 100% 50%;
+    --radius: 0.75rem;
+    --culinary-orange: 24 100% 50%;
+    --culinary-red: 5 85% 55%;
+    --culinary-green: 142 71% 45%;
+    --culinary-warm: 30 100% 97%;
+  }
+
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 0 0% 95%;
+    --card: 20 14.3% 4.1%;
+    --card-foreground: 0 0% 95%;
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 24 100% 50%;
+    --primary-foreground: 20 14.3% 4.1%;
+    --secondary: 12 6.5% 15.1%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 12 6.5% 15.1%;
+    --muted-foreground: 24 5.4% 63.9%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 95%;
+    --border: 12 6.5% 15.1%;
+    --input: 12 6.5% 15.1%;
+    --ring: 24 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-.glass-card {
-  @apply bg-secondary bg-opacity-20 backdrop-blur-lg border border-white border-opacity-10 shadow-lg;
-}
-
-.crypto-chart {
-  @apply h-[300px] w-full;
-}
-
-@keyframes pulse-subtle {
-  0%, 100% {
-    opacity: 1;
+@layer utilities {
+  .gradient-hero {
+    background: linear-gradient(135deg, hsl(var(--culinary-orange)) 0%, hsl(var(--culinary-red)) 100%);
   }
-  50% {
-    opacity: 0.8;
+  
+  .gradient-card {
+    background: linear-gradient(145deg, hsl(var(--culinary-warm)) 0%, white 100%);
   }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  
+  .food-shadow {
+    box-shadow: 0 10px 25px -5px rgba(255, 107, 0, 0.1), 0 10px 10px -5px rgba(255, 107, 0, 0.04);
+  }
 }
