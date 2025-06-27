@@ -12,6 +12,7 @@ export interface SupabaseProfile {
   preferences?: {
     dietaryRestrictions: string[];
     favoriteCategories: string[];
+    newsletter_enabled?: boolean;
   };
   created_at: string;
   updated_at: string;
