@@ -3,8 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Target, Award, Heart, MapPin, Phone, Mail, Clock, Shield, Utensils } from 'lucide-react';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
 
 const About = () => {
+  const { data: teamMembers, isLoading: teamLoading } = useTeamMembers();
+
   const values = [
     {
       icon: Heart,
@@ -43,24 +46,6 @@ const About = () => {
       icon: Users,
       title: "Tutoriels Vidéo",
       description: "Apprentissage visuel avec nos chefs experts en cuisine malienne"
-    }
-  ];
-
-  const team = [
-    {
-      name: "Amadou Traoré",
-      role: "Fondateur & CEO",
-      description: "Visionnaire passionné par la préservation du patrimoine culinaire malien"
-    },
-    {
-      name: "Fatoumata Keita",
-      role: "Chef Culinaire en Chef",
-      description: "Experte reconnue en cuisine traditionnelle malienne, 20 ans d'expérience"
-    },
-    {
-      name: "Ibrahim Diallo",
-      role: "Directeur Technique",
-      description: "Architecte de solutions digitales innovantes pour la gastronomie"
     }
   ];
 
@@ -207,27 +192,44 @@ const About = () => {
           </CardContent>
         </Card>
 
-        {/* Team Section */}
+        {/* Team Section - Using Database Data */}
         <div className="mb-16">
           <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">Notre Équipe d'Experts</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {team.map((member, index) => (
-              <Card key={index} className="text-center hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white/90 backdrop-blur-sm group">
-                <CardHeader>
-                  <div className="w-32 h-32 bg-gradient-to-r from-[#F97316] to-red-500 rounded-full mx-auto mb-6 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                    <Users className="h-16 w-16 text-white" />
-                  </div>
-                  <CardTitle className="text-2xl font-bold text-gray-900">{member.name}</CardTitle>
-                  <Badge className="bg-[#F97316]/10 text-[#F97316] hover:bg-[#F97316]/20 border-[#F97316]/20">
-                    {member.role}
-                  </Badge>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 leading-relaxed">{member.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          
+          {teamLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {teamMembers?.map((member) => (
+                <Card key={member.id} className="text-center hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white/90 backdrop-blur-sm group">
+                  <CardHeader>
+                    <div className="w-32 h-32 mx-auto mb-6 relative">
+                      {member.photo_url ? (
+                        <img 
+                          src={member.photo_url} 
+                          alt={member.name}
+                          className="w-full h-full rounded-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-r from-[#F97316] to-red-500 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                          <Users className="h-16 w-16 text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-900">{member.name}</CardTitle>
+                    <Badge className="bg-[#F97316]/10 text-[#F97316] hover:bg-[#F97316]/20 border-[#F97316]/20">
+                      {member.role}
+                    </Badge>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 leading-relaxed">{member.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Contact Section */}

@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useCurrentUserPermissions } from '@/hooks/useAdminPermissions';
 import { Navigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, Book, Package, Video, BarChart3, ArrowLeft, Settings } from 'lucide-react';
+import { Shield, Users, Book, Package, Video, BarChart3, ArrowLeft, Settings, Mail } from 'lucide-react';
 import AccessDenied from '@/components/AccessDenied';
 
 interface AdminLayoutProps {
@@ -99,6 +100,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: Settings, 
       label: 'Catégories',
       show: permissions.can_manage_categories || permissions.is_super_admin
+    },
+    { 
+      path: '/admin/newsletters', 
+      icon: Mail, 
+      label: 'Newsletters',
+      show: permissions.can_manage_users || permissions.is_super_admin
     },
   ].filter(item => item.show);
 
