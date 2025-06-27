@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,6 +31,7 @@ import UserManagement from "./pages/admin/UserManagement";
 import RecipeManagement from "./pages/admin/RecipeManagement";
 import ProductManagement from "./pages/admin/ProductManagement";
 import VideoManagement from "./pages/admin/VideoManagement";
+import CategoryManagement from "./pages/admin/CategoryManagement";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +77,13 @@ const App = () => (
                 <ProtectedRoute>
                   <AdminLayout>
                     <VideoManagement />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/categories" element={
+                <ProtectedRoute>
+                  <AdminLayout>
+                    <CategoryManagement />
                   </AdminLayout>
                 </ProtectedRoute>
               } />

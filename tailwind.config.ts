@@ -63,10 +63,22 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom brand colors
+				// Custom brand colors with main orange #F97316
+				orange: {
+					50: '#fff7ed',
+					100: '#ffedd5',
+					200: '#fed7aa',
+					300: '#fdba74', // #FDBA74
+					400: '#fb923c',
+					500: '#f97316', // Main color #F97316
+					600: '#ea580c',
+					700: '#c2410c',
+					800: '#9a3412',
+					900: '#7c2d12',
+				},
 				amber: {
 					50: '#fffbeb',
-					100: '#fef3c7',
+					100: '#fef3c7', // #FEF3C7
 					200: '#fde68a',
 					300: '#fcd34d',
 					400: '#fbbf24',
