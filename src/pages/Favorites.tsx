@@ -30,18 +30,18 @@ const Favorites = () => {
   const [activeTab, setActiveTab] = useState('recipes');
   
   const { 
-    favorites, 
+    data: favorites = [],
     isLoading, 
     removeFavorite 
-  } = useSupabaseFavorites(currentUser?.id);
+  } = useSupabaseFavorites();
 
   const recipesFavorites = favorites?.filter(fav => fav.type === 'recipe') || [];
   const videosFavorites = favorites?.filter(fav => fav.type === 'video') || [];
   const productsFavorites = favorites?.filter(fav => fav.type === 'product') || [];
 
-  const handleRemoveFavorite = async (favoriteId: string) => {
+  const handleRemoveFavorite = async (itemId: string, type: 'recipe' | 'video' | 'product') => {
     try {
-      await removeFavorite(favoriteId);
+      await removeFavorite({ itemId, type });
     } catch (error) {
       console.error('Error removing favorite:', error);
     }
@@ -147,7 +147,7 @@ const Favorites = () => {
                           size="sm"
                           variant="destructive"
                           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleRemoveFavorite(favorite.id)}
+                          onClick={() => handleRemoveFavorite(favorite.item_id, 'recipe')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -190,7 +190,7 @@ const Favorites = () => {
                           size="sm"
                           variant="destructive"
                           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleRemoveFavorite(favorite.id)}
+                          onClick={() => handleRemoveFavorite(favorite.item_id, 'video')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -233,7 +233,7 @@ const Favorites = () => {
                           size="sm"
                           variant="destructive"
                           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleRemoveFavorite(favorite.id)}
+                          onClick={() => handleRemoveFavorite(favorite.item_id, 'product')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

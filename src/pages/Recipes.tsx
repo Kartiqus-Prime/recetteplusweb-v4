@@ -184,7 +184,7 @@ const Recipes = () => {
                   image={recipe.image || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400'}
                   cookTime={recipe.cook_time}
                   servings={recipe.servings}
-                  difficulty={recipe.difficulty || 'Moyen'}
+                  difficulty={(recipe.difficulty || 'Moyen') as 'Facile' | 'Moyen' | 'Difficile'}
                   rating={recipe.rating || 0}
                   category={recipe.category}
                   description={recipe.description || ''}
