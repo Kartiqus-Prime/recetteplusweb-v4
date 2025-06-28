@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import VerifyEmail from './pages/VerifyEmail';
 import Favorites from './pages/Favorites';
+import DownloadApp from './pages/DownloadApp';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -46,6 +47,8 @@ function App() {
               <Route path="/produits" element={<Products />} />
               <Route path="/products" element={<Products />} />
               <Route path="/videos" element={<Videos />} />
+              <Route path="/download-app" element={<DownloadApp />} />
+              <Route path="/telecharger-app" element={<DownloadApp />} />
               <Route path="/login" element={<Login />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />

@@ -255,29 +255,76 @@ Deno.serve(async (req) => {
     </html>
     `
 
-    // Configuration SMTP
-    const smtpHost = Deno.env.get('SMTP_HOST') || 'smtp.gmail.com'
-    const smtpPort = parseInt(Deno.env.get('SMTP_PORT') || '587')
-    const smtpUser = Deno.env.get('SMTP_USER')
-    const smtpPass = Deno.env.get('SMTP_PASSWORD')
+    // Configuration Brevo API
+    const brevoApiKey = Deno.env.get('BREVO_API_KEY')
+    const senderEmail = "vicaire.des.ombres@gmail.com"
 
-    if (!smtpUser || !smtpPass) {
-      throw new Error('Configuration SMTP manquante')
+    if (!brevoApiKey) {
+      throw new Error('Configuration Brevo API manquante')
     }
 
-    console.log(`Configuration SMTP: ${smtpHost}:${smtpPort} avec ${smtpUser}`)
+    console.log(`Configuration Brevo: API Key présente, expéditeur: ${senderEmail}`)
     
-    // Simulation de l'envoi SMTP (remplacer par une vraie implémentation)
-    // En production, vous devriez utiliser une bibliothèque SMTP comme nodemailer
     let emailsSent = 0;
+    const errors: string[] = [];
     
     try {
-      // Simuler l'envoi réussi
-      emailsSent = users.length;
-      console.log(`${emailsSent} emails envoyés avec succès via SMTP`)
-    } catch (smtpError) {
-      console.error('Erreur SMTP:', smtpError)
-      throw new Error('Erreur lors de l\'envoi des emails')
+      // Envoyer les emails par lot pour éviter les limites de taux
+      const batchSize = 10;
+      for (let i = 0; i < users.length; i += batchSize) {
+        const batch = users.slice(i, i + batchSize);
+        
+        // Préparer les destinataires pour Brevo
+        const recipients = batch.map(user => ({
+          email: user.email,
+          name: user.display_name || user.email
+        }));
+
+        const brevoPayload = {
+          sender: {
+            email: senderEmail,
+            name: "Recette+"
+          },
+          to: recipients,
+          subject: subject,
+          htmlContent: emailTemplate,
+          textContent: content
+        };
+
+        const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': brevoApiKey
+          },
+          body: JSON.stringify(brevoPayload)
+        });
+
+        if (brevoResponse.ok) {
+          const responseData = await brevoResponse.json();
+          console.log(`Lot ${Math.floor(i/batchSize) + 1} envoyé avec succès:`, responseData);
+          emailsSent += batch.length;
+        } else {
+          const errorData = await brevoResponse.text();
+          console.error(`Erreur Brevo pour le lot ${Math.floor(i/batchSize) + 1}:`, errorData);
+          errors.push(`Lot ${Math.floor(i/batchSize) + 1}: ${errorData}`);
+        }
+
+        // Pause entre les lots pour respecter les limites de taux
+        if (i + batchSize < users.length) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      console.log(`${emailsSent} emails envoyés avec succès via Brevo`)
+      
+      if (errors.length > 0) {
+        console.warn('Erreurs lors de l\'envoi:', errors);
+      }
+
+    } catch (brevoError) {
+      console.error('Erreur Brevo:', brevoError)
+      throw new Error('Erreur lors de l\'envoi des emails via Brevo')
     }
 
     // Enregistrer la campagne dans la base de données
@@ -296,10 +343,15 @@ Deno.serve(async (req) => {
       console.error('Erreur sauvegarde campagne:', campaignError)
     }
 
+    const responseMessage = errors.length > 0 
+      ? `Newsletter envoyée à ${emailsSent} abonnés non-admins avec ${errors.length} erreurs`
+      : `Newsletter envoyée à ${emailsSent} abonnés non-admins`
+
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Newsletter envoyée à ${emailsSent} abonnés non-admins` 
+        message: responseMessage,
+        errors: errors.length > 0 ? errors : undefined
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
