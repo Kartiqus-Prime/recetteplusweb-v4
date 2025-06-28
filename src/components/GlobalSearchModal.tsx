@@ -104,13 +104,13 @@ const GlobalSearchModal = ({ open, onOpenChange }: GlobalSearchModalProps) => {
   const handleResultClick = (result: SearchResult) => {
     switch (result.type) {
       case 'product':
-        navigate(`/produits`);
+        navigate(`/produit/${result.id}`);
         break;
       case 'recipe':
-        navigate(`/recettes`);
+        navigate(`/recette/${result.id}`);
         break;
       case 'video':
-        navigate(`/videos`);
+        navigate(`/video/${result.id}`);
         break;
     }
     onOpenChange(false);

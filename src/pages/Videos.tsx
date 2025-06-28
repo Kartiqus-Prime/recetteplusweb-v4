@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+// Helper function to convert duration string to seconds
+const parseDurationToSeconds = (duration: string): number => {
+  if (!duration) return 0;
+  const parts = duration.split(':');
+  const minutes = parseInt(parts[0], 10);
+  const seconds = parseInt(parts[1], 10);
+  return minutes * 60 + seconds;
+};
 
 const Videos = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,15 +49,6 @@ const Videos = () => {
     
     return matchesSearch && matchesCategory && matchesDuration && matchesViews;
   });
-
-  // Helper function to convert duration string to seconds
-  const parseDurationToSeconds = (duration: string): number => {
-    if (!duration) return 0;
-    const parts = duration.split(':');
-    const minutes = parseInt(parts[0], 10);
-    const seconds = parseInt(parts[1], 10);
-    return minutes * 60 + seconds;
-  };
 
   if (isLoading) {
     return (

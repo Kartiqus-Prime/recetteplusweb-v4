@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import FavoriteButton from '@/components/FavoriteButton';
 
 interface VideoCardProps {
@@ -26,6 +27,8 @@ const VideoCard: React.FC<VideoCardProps> = ({
   chef,
   description
 }) => {
+  const navigate = useNavigate();
+
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -38,8 +41,12 @@ const VideoCard: React.FC<VideoCardProps> = ({
     return views.toString();
   };
 
+  const handleClick = () => {
+    navigate(`/video/${id}`);
+  };
+
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 food-shadow">
+    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 food-shadow cursor-pointer" onClick={handleClick}>
       <div className="relative overflow-hidden">
         <img 
           src={thumbnail} 
@@ -54,6 +61,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
           itemId={id}
           type="video"
           className="absolute top-2 right-2 bg-white/90 hover:bg-white shadow-sm"
+          onClick={(e) => e.stopPropagation()}
         />
         <div className="absolute top-2 left-2">
           <Badge variant="secondary" className="bg-white/90 text-gray-800">

@@ -14,6 +14,9 @@ import ForgotPassword from './pages/ForgotPassword';
 import VerifyEmail from './pages/VerifyEmail';
 import Favorites from './pages/Favorites';
 import DownloadApp from './pages/DownloadApp';
+import ProductDetail from './pages/ProductDetail';
+import RecipeDetail from './pages/RecipeDetail';
+import VideoDetail from './pages/VideoDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -44,9 +47,14 @@ function App() {
               <Route path="/apropos" element={<About />} />
               <Route path="/recettes" element={<Recipes />} />
               <Route path="/recipes" element={<Recipes />} />
+              <Route path="/recette/:id" element={<RecipeDetail />} />
+              <Route path="/recipe/:id" element={<RecipeDetail />} />
               <Route path="/produits" element={<Products />} />
               <Route path="/products" element={<Products />} />
+              <Route path="/produit/:id" element={<ProductDetail />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/videos" element={<Videos />} />
+              <Route path="/video/:id" element={<VideoDetail />} />
               <Route path="/download-app" element={<DownloadApp />} />
               <Route path="/telecharger-app" element={<DownloadApp />} />
               <Route path="/login" element={<Login />} />
