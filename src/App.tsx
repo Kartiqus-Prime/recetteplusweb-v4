@@ -12,6 +12,7 @@ import Profile from './pages/Profile';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import VerifyEmail from './pages/VerifyEmail';
+import Favorites from './pages/Favorites';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -48,6 +49,8 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/favoris" element={<Favorites />} />
+              <Route path="/favorites" element={<Favorites />} />
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <Profile />

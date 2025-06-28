@@ -2,8 +2,8 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Heart, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
+import FavoriteButton from '@/components/FavoriteButton';
 
 interface VideoCardProps {
   id: string;
@@ -17,6 +17,7 @@ interface VideoCardProps {
 }
 
 const VideoCard: React.FC<VideoCardProps> = ({
+  id,
   title,
   thumbnail,
   duration,
@@ -49,13 +50,11 @@ const VideoCard: React.FC<VideoCardProps> = ({
           <Clock className="h-3 w-3" />
           <span>{formatDuration(duration)}</span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
+        <FavoriteButton
+          itemId={id}
+          type="video"
           className="absolute top-2 right-2 bg-white/90 hover:bg-white shadow-sm"
-        >
-          <Heart className="h-4 w-4" />
-        </Button>
+        />
         <div className="absolute top-2 left-2">
           <Badge variant="secondary" className="bg-white/90 text-gray-800">
             {category}

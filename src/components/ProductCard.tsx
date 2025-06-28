@@ -3,11 +3,12 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star } from 'lucide-react';
 import { formatPrice } from '@/lib/firestore';
 import { usePersonalCart } from '@/hooks/useSupabaseCart';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useNavigate } from 'react-router-dom';
+import FavoriteButton from '@/components/FavoriteButton';
 
 interface ProductCardProps {
   id: string;
@@ -55,13 +56,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
           alt={name}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        <Button
-          variant="ghost"
-          size="icon"
+        <FavoriteButton
+          itemId={id}
+          type="product"
           className="absolute top-2 right-2 bg-white/90 hover:bg-white shadow-sm"
-        >
-          <Heart className="h-4 w-4" />
-        </Button>
+        />
         
         {promotion && (
           <div className="absolute top-2 left-2">

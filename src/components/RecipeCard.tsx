@@ -2,8 +2,8 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Users, Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Clock, Users } from 'lucide-react';
+import FavoriteButton from '@/components/FavoriteButton';
 
 interface RecipeCardProps {
   id: string;
@@ -18,6 +18,7 @@ interface RecipeCardProps {
 }
 
 const RecipeCard: React.FC<RecipeCardProps> = ({
+  id,
   title,
   image,
   cookTime,
@@ -44,13 +45,11 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
           alt={title}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        <Button
-          variant="ghost"
-          size="icon"
+        <FavoriteButton
+          itemId={id}
+          type="recipe"
           className="absolute top-2 right-2 bg-white/90 hover:bg-white shadow-sm"
-        >
-          <Heart className="h-4 w-4" />
-        </Button>
+        />
         <div className="absolute top-2 left-2">
           <Badge variant="secondary" className="bg-white/90 text-gray-800">
             {category}

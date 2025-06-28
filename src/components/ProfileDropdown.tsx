@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Settings, Shield, LogOut } from 'lucide-react';
+import { User, Heart, Shield, LogOut } from 'lucide-react';
 
 const ProfileDropdown = () => {
   const { currentUser, logout } = useAuth();
@@ -60,7 +60,7 @@ const ProfileDropdown = () => {
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/favoris" className="cursor-pointer">
-            <Settings className="mr-2 h-4 w-4" />
+            <Heart className="mr-2 h-4 w-4" />
             Favoris
           </Link>
         </DropdownMenuItem>
