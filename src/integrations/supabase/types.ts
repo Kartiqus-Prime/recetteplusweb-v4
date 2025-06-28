@@ -219,6 +219,33 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          created_at: string | null
+          id: string
+          items: Json | null
+          status: string | null
+          total_amount: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          items?: Json | null
+          status?: string | null
+          total_amount?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          items?: Json | null
+          status?: string | null
+          total_amount?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       personal_cart_items: {
         Row: {
           created_at: string
@@ -696,6 +723,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_history: {
+        Row: {
+          id: string
+          recipe_id: string | null
+          user_id: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          id?: string
+          recipe_id?: string | null
+          user_id?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          id?: string
+          recipe_id?: string | null
+          user_id?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_history_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_preconfigured_carts: {
         Row: {
           created_at: string
@@ -739,6 +795,7 @@ export type Database = {
           recipe_id: string | null
           thumbnail: string | null
           title: string
+          updated_at: string | null
           video_url: string | null
           views: number | null
         }
@@ -752,6 +809,7 @@ export type Database = {
           recipe_id?: string | null
           thumbnail?: string | null
           title: string
+          updated_at?: string | null
           video_url?: string | null
           views?: number | null
         }
@@ -765,6 +823,7 @@ export type Database = {
           recipe_id?: string | null
           thumbnail?: string | null
           title?: string
+          updated_at?: string | null
           video_url?: string | null
           views?: number | null
         }
@@ -786,6 +845,14 @@ export type Database = {
       has_admin_permission: {
         Args: { permission_type: string }
         Returns: boolean
+      }
+      increment_video_likes: {
+        Args: { video_id: string }
+        Returns: undefined
+      }
+      increment_video_views: {
+        Args: { video_id: string }
+        Returns: undefined
       }
       is_admin: {
         Args: Record<PropertyKey, never>

@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Recipes from './pages/Recipes';
 import Products from './pages/Products';
+import Videos from './pages/Videos';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
@@ -38,8 +39,12 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
+              <Route path="/apropos" element={<About />} />
+              <Route path="/recettes" element={<Recipes />} />
               <Route path="/recipes" element={<Recipes />} />
+              <Route path="/produits" element={<Products />} />
               <Route path="/products" element={<Products />} />
+              <Route path="/videos" element={<Videos />} />
               <Route path="/login" element={<Login />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
