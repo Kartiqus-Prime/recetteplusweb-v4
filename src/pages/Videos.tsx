@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, SlidersHorizontal, Play, Loader2 } from 'lucide-react';
+import { Search, Play, Loader2 } from 'lucide-react';
 import VideoCard from '@/components/VideoCard';
+import VideoFilters from '@/components/VideoFilters';
 import { useSupabaseVideos } from '@/hooks/useSupabaseVideos';
 import Header from '@/components/Header';
 import {
@@ -17,6 +18,10 @@ import {
 const Videos = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [advancedFilters, setAdvancedFilters] = useState({
+    durationRange: [0, 60],
+    minViews: 0
+  });
   const { data: videos = [], isLoading, error } = useSupabaseVideos();
 
   const categories = [...new Set(videos.map(video => video.category))];
@@ -25,7 +30,14 @@ const Videos = () => {
     const matchesSearch = video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          video.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || video.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    
+    // Filtres avancés
+    const duration = parseDurationToSeconds(video.duration || '0:00') / 60; // en minutes
+    const matchesDuration = duration >= advancedFilters.durationRange[0] && 
+                           duration <= advancedFilters.durationRange[1];
+    const matchesViews = (video.views || 0) >= advancedFilters.minViews;
+    
+    return matchesSearch && matchesCategory && matchesDuration && matchesViews;
   });
 
   // Helper function to convert duration string to seconds
@@ -100,6 +112,7 @@ const Videos = () => {
 
               {/* Filters */}
               <div className="flex flex-col sm:flex-row gap-4">
+                {/* Category select */}
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger className="w-full sm:w-48 h-12">
                     <SelectValue placeholder="Toutes les catégories" />
@@ -114,10 +127,11 @@ const Videos = () => {
                   </SelectContent>
                 </Select>
 
-                <Button variant="outline" className="w-full sm:w-auto h-12 hover:bg-orange-50 border-orange-200">
-                  <SlidersHorizontal className="h-5 w-5 mr-2" />
-                  Plus de filtres
-                </Button>
+                {/* Advanced filters */}
+                <VideoFilters 
+                  onFiltersChange={setAdvancedFilters}
+                  currentFilters={advancedFilters}
+                />
               </div>
             </div>
           </div>

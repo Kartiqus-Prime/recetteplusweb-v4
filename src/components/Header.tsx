@@ -1,11 +1,11 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Search, User, ShoppingCart, Heart, LogOut, Menu, X } from 'lucide-react';
+import { Search, User, ShoppingCart, Heart, LogOut, Menu, X, Shield } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useMainCart } from '@/hooks/useSupabaseCart';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
@@ -30,12 +30,14 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
+  const { data: userProfile } = useUserProfile();
   const { cartItems } = useMainCart();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   
   const isActive = (path: string) => location.pathname === path;
+  const isAdmin = userProfile?.role === 'admin';
 
   const handleLogout = async () => {
     try {
@@ -209,6 +211,15 @@ const Header = () => {
                       <Heart className="mr-2 h-4 w-4" />
                       <span>Mes favoris</span>
                     </DropdownMenuItem>
+                    {isAdmin && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate('/admin')}>
+                          <Shield className="mr-2 h-4 w-4" />
+                          <span>Administration</span>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />

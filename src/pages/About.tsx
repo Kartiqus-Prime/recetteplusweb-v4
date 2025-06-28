@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Target, Award, Heart, MapPin, Phone, Mail, Clock, Shield, Utensils } from 'lucide-react';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
+import Header from '@/components/Header';
 
 const About = () => {
   const { data: teamMembers, isLoading: teamLoading } = useTeamMembers();
@@ -50,8 +50,9 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
-      <div className="container mx-auto px-4 py-12">
+    <>
+      <Header />
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
         {/* Hero Section */}
         <div className="text-center mb-16 animate-fade-in">
           <div className="flex items-center justify-center mb-8">
@@ -273,7 +274,7 @@ const About = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </>
   );
 };
 

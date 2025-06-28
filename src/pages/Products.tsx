@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, SlidersHorizontal, Package, Loader2 } from 'lucide-react';
+import { Search, Package, Loader2 } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
+import ProductFilters from '@/components/ProductFilters';
 import { useSupabaseProducts } from '@/hooks/useSupabaseProducts';
 import Header from '@/components/Header';
 import {
@@ -18,6 +19,11 @@ const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
+  const [advancedFilters, setAdvancedFilters] = useState({
+    priceRange: [0, 10000],
+    ratings: [],
+    inStock: false
+  });
   const { data: products = [], isLoading, error } = useSupabaseProducts();
 
   const categories = [...new Set(products.map(product => product.category))];
@@ -29,7 +35,16 @@ const Products = () => {
       (priceRange === 'low' && product.price < 1000) ||
       (priceRange === 'medium' && product.price >= 1000 && product.price < 5000) ||
       (priceRange === 'high' && product.price >= 5000);
-    return matchesSearch && matchesCategory && matchesPrice && product.in_stock;
+    
+    // Filtres avancés
+    const matchesAdvancedPrice = product.price >= advancedFilters.priceRange[0] && 
+                                product.price <= advancedFilters.priceRange[1];
+    const matchesRating = advancedFilters.ratings.length === 0 || 
+                         advancedFilters.ratings.some((rating: number) => (product.rating || 0) >= rating);
+    const matchesStock = !advancedFilters.inStock || product.in_stock;
+    
+    return matchesSearch && matchesCategory && matchesPrice && 
+           matchesAdvancedPrice && matchesRating && matchesStock && product.in_stock;
   });
 
   if (isLoading) {
@@ -95,6 +110,7 @@ const Products = () => {
 
               {/* Filters */}
               <div className="flex flex-col sm:flex-row gap-4">
+                {/* Category and Price selects */}
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger className="w-full sm:w-48 h-12">
                     <SelectValue placeholder="Toutes les catégories" />
@@ -121,10 +137,11 @@ const Products = () => {
                   </SelectContent>
                 </Select>
 
-                <Button variant="outline" className="w-full sm:w-auto h-12 hover:bg-orange-50 border-orange-200">
-                  <SlidersHorizontal className="h-5 w-5 mr-2" />
-                  Plus de filtres
-                </Button>
+                {/* Advanced filters */}
+                <ProductFilters 
+                  onFiltersChange={setAdvancedFilters}
+                  currentFilters={advancedFilters}
+                />
               </div>
             </div>
           </div>
