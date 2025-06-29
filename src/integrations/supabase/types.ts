@@ -410,32 +410,50 @@ export type Database = {
       }
       profiles: {
         Row: {
+          bio: string | null
           created_at: string
+          date_of_birth: string | null
           display_name: string | null
           email: string | null
           id: string
+          location: string | null
+          notification_settings: Json | null
+          phone_number: string | null
           photo_url: string | null
           preferences: Json | null
+          privacy_settings: Json | null
           role: string | null
           updated_at: string
         }
         Insert: {
+          bio?: string | null
           created_at?: string
+          date_of_birth?: string | null
           display_name?: string | null
           email?: string | null
           id: string
+          location?: string | null
+          notification_settings?: Json | null
+          phone_number?: string | null
           photo_url?: string | null
           preferences?: Json | null
+          privacy_settings?: Json | null
           role?: string | null
           updated_at?: string
         }
         Update: {
+          bio?: string | null
           created_at?: string
+          date_of_birth?: string | null
           display_name?: string | null
           email?: string | null
           id?: string
+          location?: string | null
+          notification_settings?: Json | null
+          phone_number?: string | null
           photo_url?: string | null
           preferences?: Json | null
+          privacy_settings?: Json | null
           role?: string | null
           updated_at?: string
         }
@@ -842,6 +860,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_old_avatar: {
+        Args: { user_id: string }
+        Returns: undefined
+      }
       has_admin_permission: {
         Args: { permission_type: string }
         Returns: boolean
@@ -857,6 +879,10 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      update_profile_avatar: {
+        Args: { user_id: string; avatar_url: string }
+        Returns: undefined
       }
     }
     Enums: {

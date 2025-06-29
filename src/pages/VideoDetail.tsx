@@ -5,7 +5,7 @@ import { useSupabaseVideos } from '@/hooks/useSupabaseVideos';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Play, Heart, Eye, ThumbsUp, Clock, Chef } from 'lucide-react';
+import { ArrowLeft, Play, Heart, Eye, ThumbsUp, Clock, ChefHat } from 'lucide-react';
 import Header from '@/components/Header';
 import FavoriteButton from '@/components/FavoriteButton';
 
@@ -103,7 +103,7 @@ const VideoDetail = () => {
                     <span>{video.likes || 0} likes</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Chef className="h-5 w-5" />
+                    <ChefHat className="h-5 w-5" />
                     <span>Chef Recette+</span>
                   </div>
                 </div>
