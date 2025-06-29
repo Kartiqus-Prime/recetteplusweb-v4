@@ -8,7 +8,7 @@ export interface SupabaseProfile {
   email?: string;
   display_name?: string;
   photo_url?: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'manager' | 'marketing_manager' | 'content_creator' | 'admin_assistant' | 'order_validator' | 'delivery_person';
   preferences?: {
     dietaryRestrictions: string[];
     favoriteCategories: string[];
@@ -41,11 +41,11 @@ export const useSupabaseProfile = (userId?: string) => {
           email: data.email,
           display_name: data.display_name,
           photo_url: data.photo_url,
-          role: data.role || 'user',
-          preferences: data.preferences ? {
-            dietaryRestrictions: data.preferences.dietaryRestrictions || [],
-            favoriteCategories: data.preferences.favoriteCategories || [],
-            newsletter_enabled: data.preferences.newsletter_enabled
+          role: (data.role as SupabaseProfile['role']) || 'user',
+          preferences: data.preferences && typeof data.preferences === 'object' && !Array.isArray(data.preferences) ? {
+            dietaryRestrictions: (data.preferences as any).dietaryRestrictions || [],
+            favoriteCategories: (data.preferences as any).favoriteCategories || [],
+            newsletter_enabled: (data.preferences as any).newsletter_enabled
           } : {
             dietaryRestrictions: [],
             favoriteCategories: []

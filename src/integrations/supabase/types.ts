@@ -12,11 +12,13 @@ export type Database = {
       admin_permissions: {
         Row: {
           can_manage_categories: boolean | null
+          can_manage_deliveries: boolean | null
           can_manage_orders: boolean | null
           can_manage_products: boolean | null
           can_manage_recipes: boolean | null
           can_manage_users: boolean | null
           can_manage_videos: boolean | null
+          can_validate_orders: boolean | null
           created_at: string
           id: string
           is_super_admin: boolean | null
@@ -25,11 +27,13 @@ export type Database = {
         }
         Insert: {
           can_manage_categories?: boolean | null
+          can_manage_deliveries?: boolean | null
           can_manage_orders?: boolean | null
           can_manage_products?: boolean | null
           can_manage_recipes?: boolean | null
           can_manage_users?: boolean | null
           can_manage_videos?: boolean | null
+          can_validate_orders?: boolean | null
           created_at?: string
           id?: string
           is_super_admin?: boolean | null
@@ -38,11 +42,13 @@ export type Database = {
         }
         Update: {
           can_manage_categories?: boolean | null
+          can_manage_deliveries?: boolean | null
           can_manage_orders?: boolean | null
           can_manage_products?: boolean | null
           can_manage_recipes?: boolean | null
           can_manage_users?: boolean | null
           can_manage_videos?: boolean | null
+          can_validate_orders?: boolean | null
           created_at?: string
           id?: string
           is_super_admin?: boolean | null
@@ -95,6 +101,47 @@ export type Database = {
             columns: ["recipe_id"]
             isOneToOne: false
             referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_tracking: {
+        Row: {
+          created_at: string | null
+          delivery_person_id: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          notes: string | null
+          order_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          delivery_person_id: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
+          order_id: string
+          status: string
+        }
+        Update: {
+          created_at?: string | null
+          delivery_person_id?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
+          order_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_tracking_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -219,30 +266,92 @@ export type Database = {
         }
         Relationships: []
       }
-      orders: {
+      order_items: {
         Row: {
-          created_at: string | null
-          id: string
-          items: Json | null
-          status: string | null
-          total_amount: number | null
-          user_id: string | null
+          created_at: string
+          id: number
+          order_id: string
+          product_id: string
+          quantity: number
         }
         Insert: {
-          created_at?: string | null
-          id?: string
-          items?: Json | null
-          status?: string | null
-          total_amount?: number | null
-          user_id?: string | null
+          created_at?: string
+          id?: never
+          order_id: string
+          product_id: string
+          quantity: number
         }
         Update: {
+          created_at?: string
+          id?: never
+          order_id?: string
+          product_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          assigned_at: string | null
+          assigned_to: string | null
+          created_at: string | null
+          delivered_at: string | null
+          delivery_address: Json
+          delivery_notes: string | null
+          id: string
+          items: Json
+          picked_up_at: string | null
+          qr_code: string | null
+          status: string | null
+          total_amount: number
+          updated_at: string | null
+          user_id: string
+          validated_at: string | null
+          validated_by: string | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_to?: string | null
           created_at?: string | null
+          delivered_at?: string | null
+          delivery_address: Json
+          delivery_notes?: string | null
           id?: string
-          items?: Json | null
+          items: Json
+          picked_up_at?: string | null
+          qr_code?: string | null
           status?: string | null
-          total_amount?: number | null
-          user_id?: string | null
+          total_amount: number
+          updated_at?: string | null
+          user_id: string
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          delivery_address?: Json
+          delivery_notes?: string | null
+          id?: string
+          items?: Json
+          picked_up_at?: string | null
+          qr_code?: string | null
+          status?: string | null
+          total_amount?: number
+          updated_at?: string | null
+          user_id?: string
+          validated_at?: string | null
+          validated_by?: string | null
         }
         Relationships: []
       }
@@ -868,6 +977,14 @@ export type Database = {
         Args: { permission_type: string }
         Returns: boolean
       }
+      has_delivery_permission: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      has_order_validation_permission: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       increment_video_likes: {
         Args: { video_id: string }
         Returns: undefined
@@ -877,6 +994,10 @@ export type Database = {
         Returns: undefined
       }
       is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
