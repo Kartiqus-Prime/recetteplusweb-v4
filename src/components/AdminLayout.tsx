@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useCurrentUserPermissions } from '@/hooks/useAdminPermissions';
 import { Navigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, Book, Package, Video, BarChart3, ArrowLeft, Settings, Mail } from 'lucide-react';
+import { Shield, Users, Book, Package, Video, BarChart3, ArrowLeft, Settings, Mail, ShoppingCart, Truck } from 'lucide-react';
 import AccessDenied from '@/components/AccessDenied';
 
 interface AdminLayoutProps {
@@ -51,7 +51,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     permissions.can_manage_recipes || 
     permissions.can_manage_videos || 
     permissions.can_manage_categories || 
-    permissions.can_manage_orders;
+    permissions.can_manage_orders ||
+    permissions.can_validate_orders ||
+    permissions.can_manage_deliveries;
 
   if (!hasAnyPermission) {
     console.log('AdminLayout - User has no valid permissions, showing access denied');
@@ -76,6 +78,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: Users, 
       label: 'Utilisateurs',
       show: permissions.can_manage_users || permissions.is_super_admin
+    },
+    { 
+      path: '/admin/orders', 
+      icon: ShoppingCart, 
+      label: 'Commandes',
+      show: permissions.can_manage_orders || permissions.can_validate_orders || permissions.is_super_admin
+    },
+    { 
+      path: '/admin/deliveries', 
+      icon: Truck, 
+      label: 'Livraisons',
+      show: permissions.can_manage_deliveries || permissions.is_super_admin
     },
     { 
       path: '/admin/recipes', 

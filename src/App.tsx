@@ -17,6 +17,7 @@ import DownloadApp from './pages/DownloadApp';
 import ProductDetail from './pages/ProductDetail';
 import RecipeDetail from './pages/RecipeDetail';
 import VideoDetail from './pages/VideoDetail';
+import DeliveryDashboard from './pages/DeliveryDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -26,6 +27,8 @@ import ProductManagement from './pages/admin/ProductManagement';
 import VideoManagement from './pages/admin/VideoManagement';
 import CategoryManagement from './pages/admin/CategoryManagement';
 import NewsletterManagement from '@/pages/admin/NewsletterManagement';
+import OrderManagement from './pages/admin/OrderManagement';
+import DeliveryManagement from './pages/admin/DeliveryManagement';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,6 +65,11 @@ function App() {
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/favoris" element={<Favorites />} />
               <Route path="/favorites" element={<Favorites />} />
+              <Route path="/delivery" element={
+                <ProtectedRoute>
+                  <DeliveryDashboard />
+                </ProtectedRoute>
+              } />
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <Profile />
@@ -115,6 +123,20 @@ function App() {
                 <ProtectedRoute>
                   <AdminLayout>
                     <NewsletterManagement />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/orders" element={
+                <ProtectedRoute>
+                  <AdminLayout>
+                    <OrderManagement />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/deliveries" element={
+                <ProtectedRoute>
+                  <AdminLayout>
+                    <DeliveryManagement />
                   </AdminLayout>
                 </ProtectedRoute>
               } />

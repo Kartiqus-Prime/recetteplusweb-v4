@@ -1,348 +1,214 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { useSupabaseProfile, useUpdateSupabaseProfile } from '@/hooks/useSupabaseProfiles';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useUpdateSupabaseProfile } from '@/hooks/useSupabaseProfiles';
+import { useUserOrders } from '@/hooks/useOrders';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { User, Mail, Bell, Shield, ChefHat, Heart, ShoppingCart, Calendar, Settings } from 'lucide-react';
-import { useUpdateUserNewsletterPreference } from '@/hooks/useNewsletters';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import Header from '@/components/Header';
-import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UpdateProfileForm } from '@/components/UpdateProfileForm';
+import { OrderStatusCard } from '@/components/OrderStatusCard';
+import { DeliveryTracker } from '@/components/DeliveryTracker';
+import { ShoppingCart, Plus } from 'lucide-react';
+import CreateOrderDialog from '@/components/CreateOrderDialog';
 
 const Profile = () => {
-  const { currentUser } = useAuth();
-  const { data: profile, isLoading } = useSupabaseProfile(currentUser?.id);
+  const { currentUser, logout } = useAuth();
+  const { data: userProfile, isLoading, refetch } = useUserProfile();
   const updateProfile = useUpdateSupabaseProfile();
-  const updateNewsletterPref = useUpdateUserNewsletterPreference();
-  const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(false);
+  const [showCreateOrder, setShowCreateOrder] = useState(false);
 
-  const [displayName, setDisplayName] = useState(profile?.display_name || '');
-  const [bio, setBio] = useState('');
-  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>(profile?.preferences?.dietaryRestrictions || []);
-  const [favoriteCategories, setFavoriteCategories] = useState<string[]>(profile?.preferences?.favoriteCategories || []);
-  const [isDirty, setIsDirty] = useState(false);
+  const [formValues, setFormValues] = useState({
+    displayName: userProfile?.display_name || '',
+    photoURL: userProfile?.photo_url || '',
+    dietaryRestrictions: userProfile?.preferences?.dietaryRestrictions || [],
+    favoriteCategories: userProfile?.preferences?.favoriteCategories || [],
+  });
 
-  const isAdmin = profile?.role === 'admin';
-
-  useEffect(() => {
-    if (profile) {
-      setDisplayName(profile.display_name || '');
-      setDietaryRestrictions(profile.preferences?.dietaryRestrictions || []);
-      setFavoriteCategories(profile.preferences?.favoriteCategories || []);
-    }
-  }, [profile]);
-
-  useEffect(() => {
-    setIsDirty(
-      displayName !== (profile?.display_name || '') ||
-      JSON.stringify(dietaryRestrictions) !== JSON.stringify(profile?.preferences?.dietaryRestrictions || []) ||
-      JSON.stringify(favoriteCategories) !== JSON.stringify(profile?.preferences?.favoriteCategories || [])
-    );
-  }, [displayName, dietaryRestrictions, favoriteCategories, profile]);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormValues({
+      ...formValues,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!currentUser?.id || !isDirty) return;
-
     try {
       await updateProfile.mutateAsync({
-        userId: currentUser.id,
+        userId: currentUser!.id,
         data: {
-          display_name: displayName,
+          display_name: formValues.displayName,
+          photo_url: formValues.photoURL,
           preferences: {
-            ...profile?.preferences,
-            dietaryRestrictions: dietaryRestrictions,
-            favoriteCategories: favoriteCategories
-          }
-        }
+            dietaryRestrictions: formValues.dietaryRestrictions,
+            favoriteCategories: formValues.favoriteCategories,
+          },
+        },
       });
-      setIsDirty(false);
+      setIsEditing(false);
+      refetch();
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le profil.",
-        variant: "destructive"
-      });
     }
   };
 
-  const handleNewsletterToggle = async (enabled: boolean) => {
-    if (!currentUser?.id || isAdmin) return;
-    
+  const handleLogout = async () => {
     try {
-      await updateNewsletterPref.mutateAsync({
-        userId: currentUser.id,
-        enabled
-      });
+      await logout();
     } catch (error) {
-      console.error('Erreur mise à jour newsletter:', error);
+      console.error('Error during logout:', error);
     }
   };
 
-  const availableCategories = [
-    'Plats principaux', 'Entrées', 'Desserts', 'Boissons', 'Soupes', 'Grillades', 'Végétarien', 'Traditionnel'
-  ];
+  const { data: userOrders = [] } = useUserOrders(currentUser?.id);
 
-  const toggleCategory = (category: string) => {
-    setFavoriteCategories(prev => 
-      prev.includes(category) 
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
+  const toggleCreateOrder = () => {
+    setShowCreateOrder(!showCreateOrder);
   };
-
-  const toggleDietaryRestriction = (restriction: string) => {
-    setDietaryRestrictions(prev => 
-      prev.includes(restriction) 
-        ? prev.filter(r => r !== restriction)
-        : [...prev, restriction]
-    );
-  };
-
-  const commonRestrictions = ['Sans gluten', 'Végétarien', 'Végan', 'Sans lactose', 'Halal', 'Sans noix'];
 
   if (isLoading) {
     return (
-      <>
-        <Header />
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
-        </div>
-      </>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
       <Header />
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="grid gap-8">
-            {/* Profile Header */}
-            <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
-              <CardContent className="p-8">
-                <div className="flex flex-col md:flex-row items-center gap-6">
-                  <Avatar className="w-24 h-24">
-                    <AvatarImage src={currentUser?.user_metadata?.avatar_url} />
-                    <AvatarFallback className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-2xl">
-                      {displayName?.charAt(0) || currentUser?.email?.charAt(0)?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-center md:text-left flex-1">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                      {displayName || 'Utilisateur'}
-                    </h1>
-                    <p className="text-gray-600 mb-4">{currentUser?.email}</p>
-                    <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        Membre depuis {new Date(profile?.created_at || '').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-                      </Badge>
-                      {isAdmin && (
-                        <Badge variant="default" className="bg-gradient-to-r from-purple-500 to-pink-500">
-                          <Shield className="h-3 w-3 mr-1" />
-                          Administrateur
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Profile Header */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Mon Profil</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Nom d'utilisateur:</Label>
+                  <p className="font-semibold">{userProfile?.display_name || 'Non défini'}</p>
                 </div>
-              </CardContent>
-            </Card>
+                <div>
+                  <Label>Email:</Label>
+                  <p className="font-semibold">{currentUser?.email}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Personal Information */}
-              <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+          {/* Tabs */}
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="profile">Profil</TabsTrigger>
+              <TabsTrigger value="orders">Mes Commandes</TabsTrigger>
+              <TabsTrigger value="preferences">Préférences</TabsTrigger>
+              <TabsTrigger value="settings">Paramètres</TabsTrigger>
+            </TabsList>
+
+            {/* Profile Tab */}
+            <TabsContent value="profile">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <User className="h-5 w-5 text-orange-500" />
-                    Informations personnelles
-                  </CardTitle>
-                  <CardDescription>
-                    Modifiez vos informations de profil
-                  </CardDescription>
+                  <CardTitle>Informations du Profil</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Nom d'affichage</Label>
-                      <Input
-                        id="name"
-                        placeholder="Votre nom d'affichage"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="bio">Biographie</Label>
-                      <Textarea
-                        id="bio"
-                        placeholder="Parlez-nous de votre passion pour la cuisine..."
-                        value={bio}
-                        onChange={(e) => setBio(e.target.value)}
-                        rows={3}
-                      />
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      disabled={!isDirty || updateProfile.isPending} 
-                      className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-                    >
-                      {updateProfile.isPending ? 'Mise à jour...' : 'Mettre à jour le profil'}
-                    </Button>
-                  </form>
+                  <UpdateProfileForm userProfile={userProfile} refetch={refetch} />
                 </CardContent>
               </Card>
+            </TabsContent>
 
-              {/* Preferences */}
-              <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+            {/* Orders Tab */}
+            <TabsContent value="orders">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <Settings className="h-5 w-5 text-orange-500" />
-                    Préférences culinaires
-                  </CardTitle>
-                  <CardDescription>
-                    Personnalisez votre expérience
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Favorite Categories */}
-                  <div>
-                    <Label className="text-sm font-medium mb-3 block">Catégories favorites</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {availableCategories.map((category) => (
-                        <Badge
-                          key={category}
-                          variant={favoriteCategories.includes(category) ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            favoriteCategories.includes(category) 
-                              ? "bg-orange-500 hover:bg-orange-600" 
-                              : "hover:bg-orange-50"
-                          }`}
-                          onClick={() => toggleCategory(category)}
-                        >
-                          <ChefHat className="h-3 w-3 mr-1" />
-                          {category}
-                        </Badge>
-                      ))}
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center space-x-2">
+                      <ShoppingCart className="h-5 w-5" />
+                      <span>Mes Commandes</span>
+                    </CardTitle>
+                    <CreateOrderDialog>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Nouvelle Commande
+                      </Button>
+                    </CreateOrderDialog>
                   </div>
-
-                  {/* Dietary Restrictions */}
-                  <div>
-                    <Label className="text-sm font-medium mb-3 block">Restrictions alimentaires</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {commonRestrictions.map((restriction) => (
-                        <Badge
-                          key={restriction}
-                          variant={dietaryRestrictions.includes(restriction) ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            dietaryRestrictions.includes(restriction) 
-                              ? "bg-green-500 hover:bg-green-600" 
-                              : "hover:bg-green-50"
-                          }`}
-                          onClick={() => toggleDietaryRestriction(restriction)}
-                        >
-                          {restriction}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Communication Preferences - Only for non-admin users */}
-            {!isAdmin && (
-              <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <Mail className="h-5 w-5 text-orange-500" />
-                    Préférences de communication
-                  </CardTitle>
-                  <CardDescription>
-                    Gérez vos notifications et communications
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Bell className="h-4 w-4 text-orange-500" />
-                        <h4 className="font-medium text-gray-900">Newsletter culinaire</h4>
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        Recevez nos dernières recettes, conseils de chefs et actualités culinaires
-                      </p>
+                  {userOrders.length === 0 ? (
+                    <div className="text-center py-8">
+                      <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600 mb-4">Vous n'avez pas encore passé de commande</p>
+                      <CreateOrderDialog>
+                        <Button>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Passer ma première commande
+                        </Button>
+                      </CreateOrderDialog>
                     </div>
-                    <Switch
-                      checked={profile?.preferences?.newsletter_enabled ?? true}
-                      onCheckedChange={handleNewsletterToggle}
-                      disabled={updateNewsletterPref.isPending}
-                    />
+                  ) : (
+                    <div className="space-y-4">
+                      {userOrders.map((order) => (
+                        <div key={order.id}>
+                          <OrderStatusCard order={order} />
+                          {['assigned', 'picked_up', 'in_transit'].includes(order.status) && (
+                            <div className="mt-4">
+                              <DeliveryTracker orderId={order.id} />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Preferences Tab */}
+            <TabsContent value="preferences">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Préférences</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div>
+                    <Label>Restrictions alimentaires:</Label>
+                    <p>{formValues.dietaryRestrictions.join(', ') || 'Aucune'}</p>
+                  </div>
+                  <div>
+                    <Label>Catégories favorites:</Label>
+                    <p>{formValues.favoriteCategories.join(', ') || 'Aucune'}</p>
                   </div>
                 </CardContent>
               </Card>
-            )}
+            </TabsContent>
 
-            {/* Admin Notice */}
-            {isAdmin && (
-              <Card className="shadow-xl border-0 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <Shield className="h-6 w-6 text-purple-600" />
-                    <div>
-                      <h3 className="font-semibold text-purple-900">Compte administrateur</h3>
-                      <p className="text-sm text-purple-700">
-                        En tant qu'administrateur, vous n'êtes pas inscrit à la newsletter et avez accès aux fonctionnalités de gestion avancées.
-                      </p>
-                    </div>
-                  </div>
+            {/* Settings Tab */}
+            <TabsContent value="settings">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Paramètres</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button onClick={handleLogout} variant="destructive">
+                    Déconnexion
+                  </Button>
                 </CardContent>
               </Card>
-            )}
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent className="p-6 text-center">
-                  <Heart className="h-8 w-8 mx-auto mb-3 text-red-500" />
-                  <h3 className="font-semibold mb-2">Mes Favoris</h3>
-                  <p className="text-sm text-gray-600">Retrouvez vos recettes préférées</p>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent className="p-6 text-center">
-                  <ShoppingCart className="h-8 w-8 mx-auto mb-3 text-green-500" />
-                  <h3 className="font-semibold mb-2">Mes Commandes</h3>
-                  <p className="text-sm text-gray-600">Suivez vos achats d'ingrédients</p>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent className="p-6 text-center">
-                  <ChefHat className="h-8 w-8 mx-auto mb-3 text-orange-500" />
-                  <h3 className="font-semibold mb-2">Mes Recettes</h3>
-                  <p className="text-sm text-gray-600">Créez et partagez vos créations</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
-    </>
+      <Footer />
+    </div>
   );
 };
 
