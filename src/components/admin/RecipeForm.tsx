@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2, Search } from 'lucide-react';
 import { Recipe } from '@/hooks/useSupabaseRecipes';
 import { RECIPE_CATEGORIES, RecipeCategory } from '@/lib/categories';
-import { useSupabaseProducts } from '@/hooks/useSupabaseProducts';
+import { useProducts } from '@/hooks/useProducts';
 import { useSupabaseVideos } from '@/hooks/useSupabaseVideos';
 
 interface RecipeFormProps {
@@ -20,7 +20,7 @@ interface RecipeFormProps {
 }
 
 const RecipeForm: React.FC<RecipeFormProps> = ({ recipe, onSubmit, onCancel, isLoading }) => {
-  const { data: products } = useSupabaseProducts();
+  const { data: products } = useProducts();
   const { data: videos } = useSupabaseVideos();
   
   const [formData, setFormData] = useState({

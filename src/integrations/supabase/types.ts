@@ -703,6 +703,7 @@ export type Database = {
           category: string
           cook_time: number
           created_at: string
+          created_by: string
           description: string | null
           difficulty: string | null
           id: string
@@ -718,6 +719,7 @@ export type Database = {
           category: string
           cook_time: number
           created_at?: string
+          created_by: string
           description?: string | null
           difficulty?: string | null
           id?: string
@@ -733,6 +735,7 @@ export type Database = {
           category?: string
           cook_time?: number
           created_at?: string
+          created_by?: string
           description?: string | null
           difficulty?: string | null
           id?: string

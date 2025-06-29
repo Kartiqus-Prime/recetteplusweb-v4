@@ -1,140 +1,179 @@
 
 import React from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
-import { useCurrentUserPermissions } from '@/hooks/useAdminPermissions';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Package, 
-  ChefHat, 
-  Video, 
-  ShoppingCart, 
-  Truck,
-  Database,
-  Settings,
-  LogOut 
-} from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useCurrentUserPermissions } from '@/hooks/useAdminPermissions';
+import { Navigate, Link, useLocation } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Shield, Users, Book, Package, Video, BarChart3, ArrowLeft, Settings, Mail, ShoppingCart, Truck } from 'lucide-react';
+import AccessDenied from '@/components/AccessDenied';
 
-const AdminLayout = () => {
+interface AdminLayoutProps {
+  children: React.ReactNode;
+}
+
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+  const { currentUser, loading: authLoading } = useAuth();
+  const { data: permissions, isLoading: permissionsLoading, error: permissionsError } = useCurrentUserPermissions();
   const location = useLocation();
-  const { data: permissions } = useCurrentUserPermissions();
-  const { logout } = useAuth();
 
-  if (!permissions) {
+  console.log('AdminLayout - currentUser:', currentUser?.id);
+  console.log('AdminLayout - permissions:', permissions);
+  console.log('AdminLayout - authLoading:', authLoading, 'permissionsLoading:', permissionsLoading);
+  console.log('AdminLayout - permissions error:', permissionsError);
+
+  if (authLoading || permissionsLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Accès refusé</h1>
-          <p className="text-gray-600">Vous n'avez pas les permissions nécessaires pour accéder à cette section.</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
       </div>
     );
   }
 
+  if (!currentUser) {
+    console.log('AdminLayout - No user, redirecting to login');
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!permissions) {
+    console.log('AdminLayout - User has no admin permissions, showing access denied');
+    return (
+      <AccessDenied 
+        title="Accès administrateur refusé"
+        message="Vous n'avez pas les permissions d'administrateur nécessaires pour accéder à cette section."
+        showBackButton={true}
+      />
+    );
+  }
+
+  const hasAnyPermission = permissions.is_super_admin || 
+    permissions.can_manage_users || 
+    permissions.can_manage_products || 
+    permissions.can_manage_recipes || 
+    permissions.can_manage_videos || 
+    permissions.can_manage_categories || 
+    permissions.can_manage_orders ||
+    permissions.can_validate_orders ||
+    permissions.can_manage_deliveries;
+
+  if (!hasAnyPermission) {
+    console.log('AdminLayout - User has no valid permissions, showing access denied');
+    return (
+      <AccessDenied 
+        title="Permissions insuffisantes"
+        message="Vos permissions d'administrateur ne vous permettent pas d'accéder à cette section."
+        showBackButton={true}
+      />
+    );
+  }
+
   const menuItems = [
-    {
-      path: '/admin',
+    { 
+      path: '/admin', 
+      icon: BarChart3, 
       label: 'Tableau de bord',
-      icon: LayoutDashboard,
       show: true
     },
-    {
-      path: '/admin/users',
+    { 
+      path: '/admin/users', 
+      icon: Users, 
       label: 'Utilisateurs',
-      icon: Users,
       show: permissions.can_manage_users || permissions.is_super_admin
     },
-    {
-      path: '/admin/products',
-      label: 'Produits',
-      icon: Package,
-      show: permissions.can_manage_products || permissions.is_super_admin
-    },
-    {
-      path: '/admin/recipes',
-      label: 'Recettes',
-      icon: ChefHat,
-      show: permissions.can_manage_recipes || permissions.is_super_admin
-    },
-    {
-      path: '/admin/videos',
-      label: 'Vidéos',
-      icon: Video,
-      show: permissions.can_manage_videos || permissions.is_super_admin
-    },
-    {
-      path: '/admin/orders',
+    { 
+      path: '/admin/orders', 
+      icon: ShoppingCart, 
       label: 'Commandes',
-      icon: ShoppingCart,
       show: permissions.can_manage_orders || permissions.can_validate_orders || permissions.is_super_admin
     },
-    {
-      path: '/admin/deliveries',
+    { 
+      path: '/admin/deliveries', 
+      icon: Truck, 
       label: 'Livraisons',
-      icon: Truck,
       show: permissions.can_manage_deliveries || permissions.is_super_admin
     },
-    {
-      path: '/admin/categories',
+    { 
+      path: '/admin/recipes', 
+      icon: Book, 
+      label: 'Recettes',
+      show: permissions.can_manage_recipes || permissions.is_super_admin
+    },
+    { 
+      path: '/admin/products', 
+      icon: Package, 
+      label: 'Produits',
+      show: permissions.can_manage_products || permissions.is_super_admin
+    },
+    { 
+      path: '/admin/videos', 
+      icon: Video, 
+      label: 'Vidéos',
+      show: permissions.can_manage_videos || permissions.is_super_admin
+    },
+    { 
+      path: '/admin/categories', 
+      icon: Settings, 
       label: 'Catégories',
-      icon: Settings,
       show: permissions.can_manage_categories || permissions.is_super_admin
     },
-    {
-      path: '/admin/data-seeding',
-      label: 'Données de Test',
-      icon: Database,
-      show: permissions.is_super_admin
-    }
-  ];
-
-  const visibleMenuItems = menuItems.filter(item => item.show);
+    { 
+      path: '/admin/newsletters', 
+      icon: Mail, 
+      label: 'Newsletters',
+      show: permissions.can_manage_users || permissions.is_super_admin
+    },
+  ].filter(item => item.show);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg">
-        <div className="p-6">
-          <h1 className="text-xl font-bold text-gray-900">Administration</h1>
-        </div>
-        
-        <nav className="mt-6">
-          {visibleMenuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center px-6 py-3 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-orange-50 border-r-2 border-orange-500 text-orange-700'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`}
-              >
-                <Icon className="h-5 w-5 mr-3" />
-                {item.label}
-              </Link>
-            );
-          })}
+    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
+      {/* Sidebar - Responsive */}
+      <div className="w-full lg:w-80 bg-white shadow-lg min-h-screen lg:min-h-screen">
+        <div className="p-4 lg:p-6">
+          <div className="flex items-center mb-6 lg:mb-8">
+            <Shield className="h-6 w-6 lg:h-8 lg:w-8 text-orange-500 mr-2 lg:mr-3" />
+            <div>
+              <h1 className="text-lg lg:text-xl font-bold text-gray-900">Administration</h1>
+              {permissions.is_super_admin && (
+                <span className="text-xs text-orange-600 font-medium">Super Admin</span>
+              )}
+            </div>
+          </div>
           
-          <button
-            onClick={logout}
-            className="w-full flex items-center px-6 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-          >
-            <LogOut className="h-5 w-5 mr-3" />
-            Déconnexion
-          </button>
-        </nav>
+          <nav className="space-y-1 lg:space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex items-center px-3 lg:px-4 py-2 lg:py-3 rounded-lg transition-colors text-sm lg:text-base ${
+                    isActive 
+                      ? 'bg-orange-100 text-orange-600' 
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 lg:h-5 lg:w-5 mr-2 lg:mr-3" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+          
+          <div className="mt-6 lg:mt-8 pt-4 border-t">
+            <Link to="/">
+              <Button variant="outline" className="w-full text-sm lg:text-base">
+                <ArrowLeft className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                Retour au site
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-x-hidden">
-        <div className="p-8">
-          <Outlet />
-        </div>
+      {/* Main Content - Responsive */}
+      <div className="flex-1 p-4 lg:p-8 overflow-auto">
+        {children}
       </div>
     </div>
   );
