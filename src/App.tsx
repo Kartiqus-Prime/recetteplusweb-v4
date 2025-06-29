@@ -2,7 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { SupabaseAuthProvider } from '@/contexts/SupabaseAuthContext';
+import { AuthProvider } from '@/contexts/SupabaseAuthContext';
 import { Toaster } from '@/components/ui/toaster';
 
 // Pages publiques
@@ -63,7 +63,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <SupabaseAuthProvider>
+      <AuthProvider>
         <Router>
           <div className="App">
             <Routes>
@@ -139,7 +139,7 @@ function App() {
           </div>
         </Router>
         <Toaster />
-      </SupabaseAuthProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
