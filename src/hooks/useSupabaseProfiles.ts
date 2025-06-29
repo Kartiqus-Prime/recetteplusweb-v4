@@ -34,7 +34,27 @@ export const useSupabaseProfile = (userId?: string) => {
           .single();
 
         if (error) throw error;
-        return data as SupabaseProfile;
+        
+        // Safely transform the data to match our interface
+        const profile: SupabaseProfile = {
+          id: data.id,
+          email: data.email,
+          display_name: data.display_name,
+          photo_url: data.photo_url,
+          role: data.role || 'user',
+          preferences: data.preferences ? {
+            dietaryRestrictions: data.preferences.dietaryRestrictions || [],
+            favoriteCategories: data.preferences.favoriteCategories || [],
+            newsletter_enabled: data.preferences.newsletter_enabled
+          } : {
+            dietaryRestrictions: [],
+            favoriteCategories: []
+          },
+          created_at: data.created_at,
+          updated_at: data.updated_at
+        };
+
+        return profile;
       } catch (error) {
         console.error('Error fetching profile:', error);
         toast({
