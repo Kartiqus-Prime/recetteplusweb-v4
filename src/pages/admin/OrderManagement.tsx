@@ -76,8 +76,9 @@ const OrderManagement: React.FC = () => {
     }).format(amount);
   };
 
+  // Corriger la logique de filtrage des livreurs avec les nouveaux rôles
   const deliveryPersons = users.filter(user => 
-    user.role === 'delivery_person' || user.role === 'admin' || user.role === 'manager'
+    ['delivery_person', 'admin', 'manager', 'admin_assistant'].includes(user.role || 'user')
   );
 
   const filteredOrders = orders.filter(order => {

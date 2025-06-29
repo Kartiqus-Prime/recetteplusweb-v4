@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useProducts } from '@/hooks/useSupabaseProducts';
+import { useSupabaseProducts } from '@/hooks/useSupabaseProducts';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -25,7 +25,7 @@ interface CreateOrderDialogProps {
 }
 
 const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ children }) => {
-  const { data: products = [] } = useProducts();
+  const { data: products = [] } = useSupabaseProducts();
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -97,8 +97,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ children }) => {
         .insert({
           user_id: currentUser.id,
           total_amount: calculateTotal(),
-          items: orderItems,
-          delivery_address: deliveryAddress,
+          items: orderItems as any, // Cast to Json type
+          delivery_address: deliveryAddress as any, // Cast to Json type
           delivery_notes: deliveryNotes || null,
           status: 'pending'
         })

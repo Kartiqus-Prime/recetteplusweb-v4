@@ -12,6 +12,8 @@ export interface AdminPermissions {
   can_manage_videos: boolean;
   can_manage_categories: boolean;
   can_manage_orders: boolean;
+  can_validate_orders: boolean;
+  can_manage_deliveries: boolean;
   is_super_admin: boolean;
   created_at: string;
   updated_at: string;

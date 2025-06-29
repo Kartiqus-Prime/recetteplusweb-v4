@@ -1,18 +1,19 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUpdateSupabaseProfile } from '@/hooks/useSupabaseProfiles';
 import { useUserOrders } from '@/hooks/useOrders';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UpdateProfileForm } from '@/components/UpdateProfileForm';
-import { OrderStatusCard } from '@/components/OrderStatusCard';
-import { DeliveryTracker } from '@/components/DeliveryTracker';
+import UpdateProfileForm from '@/components/UpdateProfileForm';
+import OrderStatusCard from '@/components/OrderStatusCard';
+import DeliveryTracker from '@/components/DeliveryTracker';
 import { ShoppingCart, Plus } from 'lucide-react';
 import CreateOrderDialog from '@/components/CreateOrderDialog';
 
@@ -23,11 +24,13 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showCreateOrder, setShowCreateOrder] = useState(false);
 
+  // Safely access preferences with proper type casting
+  const preferences = userProfile?.preferences as any;
   const [formValues, setFormValues] = useState({
     displayName: userProfile?.display_name || '',
     photoURL: userProfile?.photo_url || '',
-    dietaryRestrictions: userProfile?.preferences?.dietaryRestrictions || [],
-    favoriteCategories: userProfile?.preferences?.favoriteCategories || [],
+    dietaryRestrictions: preferences?.dietaryRestrictions || [],
+    favoriteCategories: preferences?.favoriteCategories || [],
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -181,11 +184,11 @@ const Profile = () => {
                 <CardContent>
                   <div>
                     <Label>Restrictions alimentaires:</Label>
-                    <p>{formValues.dietaryRestrictions.join(', ') || 'Aucune'}</p>
+                    <p>{preferences?.dietaryRestrictions?.join(', ') || 'Aucune'}</p>
                   </div>
                   <div>
                     <Label>Catégories favorites:</Label>
-                    <p>{formValues.favoriteCategories.join(', ') || 'Aucune'}</p>
+                    <p>{preferences?.favoriteCategories?.join(', ') || 'Aucune'}</p>
                   </div>
                 </CardContent>
               </Card>
