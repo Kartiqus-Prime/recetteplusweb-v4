@@ -16,23 +16,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-// Helper function to convert duration string to seconds - fixed to handle various formats
+// Helper function to convert duration string to seconds
 const parseDurationToSeconds = (duration: string): number => {
   if (!duration) return 0;
-  
-  // Handle format like "15:30" (minutes:seconds)
-  if (duration.includes(':')) {
-    const parts = duration.split(':');
-    if (parts.length === 2) {
-      const minutes = parseInt(parts[0], 10) || 0;
-      const seconds = parseInt(parts[1], 10) || 0;
-      return minutes * 60 + seconds;
-    }
-  }
-  
-  // Handle pure number format (assume seconds)
-  const numValue = parseInt(duration, 10);
-  return isNaN(numValue) ? 0 : numValue;
+  const parts = duration.split(':');
+  const minutes = parseInt(parts[0], 10);
+  const seconds = parseInt(parts[1], 10);
+  return minutes * 60 + seconds;
 };
 
 const Videos = () => {
@@ -44,9 +34,6 @@ const Videos = () => {
   });
   const { data: videos = [], isLoading, error } = useSupabaseVideos();
 
-  console.log('Total videos from database:', videos.length);
-  console.log('Videos data:', videos);
-
   const categories = [...new Set(videos.map(video => video.category))];
 
   const filteredVideos = videos.filter(video => {
@@ -54,26 +41,14 @@ const Videos = () => {
                          video.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || video.category === selectedCategory;
     
-    // Filtres avancés - with better error handling
-    const durationInSeconds = parseDurationToSeconds(video.duration || '0');
-    const durationInMinutes = durationInSeconds / 60;
-    const matchesDuration = durationInMinutes >= advancedFilters.durationRange[0] && 
-                           durationInMinutes <= advancedFilters.durationRange[1];
-    const matchesViews = (video.views || 0) >= advancedFilters.minVieves;
-    
-    console.log('Video:', video.title, {
-      matchesSearch,
-      matchesCategory,
-      matchesDuration,
-      matchesViews,
-      durationInMinutes,
-      views: video.views
-    });
+    // Filtres avancés
+    const duration = parseDurationToSeconds(video.duration || '0:00') / 60; // en minutes
+    const matchesDuration = duration >= advancedFilters.durationRange[0] && 
+                           duration <= advancedFilters.durationRange[1];
+    const matchesViews = (video.views || 0) >= advancedFilters.minViews;
     
     return matchesSearch && matchesCategory && matchesDuration && matchesViews;
   });
-
-  console.log('Filtered videos count:', filteredVideos.length);
 
   if (isLoading) {
     return (
@@ -222,7 +197,7 @@ const Videos = () => {
                     id={video.id}
                     title={video.title}
                     thumbnail={video.thumbnail || 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400'}
-                    duration={parseDurationToSeconds(video.duration || '0')}
+                    duration={parseDurationToSeconds(video.duration || '0:00')}
                     views={video.views || 0}
                     category={video.category}
                     chef="Chef Recette+"
