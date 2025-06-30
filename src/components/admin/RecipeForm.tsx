@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +10,7 @@ import { Recipe } from '@/hooks/useSupabaseRecipes';
 import { RECIPE_CATEGORIES, RecipeCategory } from '@/lib/categories';
 import { useProducts } from '@/hooks/useProducts';
 import { useSupabaseVideos } from '@/hooks/useSupabaseVideos';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 
 interface RecipeFormProps {
   recipe?: Recipe;
@@ -22,6 +22,7 @@ interface RecipeFormProps {
 const RecipeForm: React.FC<RecipeFormProps> = ({ recipe, onSubmit, onCancel, isLoading }) => {
   const { data: products } = useProducts();
   const { data: videos } = useSupabaseVideos();
+  const { currentUser } = useAuth();
   
   const [formData, setFormData] = useState({
     title: recipe?.title || '',
@@ -33,7 +34,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipe, onSubmit, onCancel, isL
     rating: recipe?.rating || 4.0,
     category: recipe?.category || 'Plats traditionnels maliens' as RecipeCategory,
     video_id: recipe?.video_id || '',
-    created_by: recipe?.created_by || ''
+    created_by: recipe?.created_by || currentUser?.id || ''
   });
 
   const [ingredients, setIngredients] = useState(recipe?.ingredients || [
@@ -54,12 +55,16 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipe, onSubmit, onCancel, isL
       return;
     }
 
-    onSubmit({
+    // Ensure created_by is set to current user's ID for new recipes
+    const recipeData = {
       ...formData,
+      created_by: recipe?.created_by || currentUser?.id || '',
       ingredients: validIngredients,
       instructions: instructions.filter(inst => inst.trim() !== ''),
       video_id: formData.video_id || undefined
-    });
+    };
+
+    onSubmit(recipeData);
   };
 
   const addIngredient = () => {

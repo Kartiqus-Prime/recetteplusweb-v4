@@ -146,6 +146,42 @@ export type Database = {
           },
         ]
       }
+      delivery_zones: {
+        Row: {
+          created_at: string | null
+          delivery_fee: number
+          description: string | null
+          id: string
+          is_active: boolean | null
+          max_delivery_time: number | null
+          min_delivery_time: number | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          delivery_fee?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_delivery_time?: number | null
+          min_delivery_time?: number | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          delivery_fee?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_delivery_time?: number | null
+          min_delivery_time?: number | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -703,7 +739,7 @@ export type Database = {
           category: string
           cook_time: number
           created_at: string
-          created_by: string
+          created_by: string | null
           description: string | null
           difficulty: string | null
           id: string
@@ -719,7 +755,7 @@ export type Database = {
           category: string
           cook_time: number
           created_at?: string
-          created_by: string
+          created_by?: string | null
           description?: string | null
           difficulty?: string | null
           id?: string
@@ -735,7 +771,7 @@ export type Database = {
           category?: string
           cook_time?: number
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           description?: string | null
           difficulty?: string | null
           id?: string
@@ -879,6 +915,42 @@ export type Database = {
           },
         ]
       }
+      user_locations: {
+        Row: {
+          address: string
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          label: string | null
+          latitude: number | null
+          longitude: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          label?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          label?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_preconfigured_carts: {
         Row: {
           created_at: string
@@ -915,6 +987,7 @@ export type Database = {
         Row: {
           category: string
           created_at: string
+          created_by: string | null
           description: string | null
           duration: string | null
           id: string
@@ -929,6 +1002,7 @@ export type Database = {
         Insert: {
           category: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           duration?: string | null
           id?: string
@@ -943,6 +1017,7 @@ export type Database = {
         Update: {
           category?: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           duration?: string | null
           id?: string
@@ -969,9 +1044,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_distance: {
+        Args: { lat1: number; lon1: number; lat2: number; lon2: number }
+        Returns: number
+      }
       delete_old_avatar: {
         Args: { user_id: string }
         Returns: undefined
+      }
+      find_nearest_delivery_zone: {
+        Args: { lat: number; lon: number }
+        Returns: string
+      }
+      get_personal_cart_details: {
+        Args: { cart_id: string }
+        Returns: Json
+      }
+      get_preconfigured_cart_details: {
+        Args: { cart_id: string }
+        Returns: Json
+      }
+      get_recipe_cart_details: {
+        Args: { cart_id: string }
+        Returns: Json
       }
       has_admin_permission: {
         Args: { permission_type: string }
