@@ -23,6 +23,10 @@ export interface Order {
   delivered_at?: string;
   qr_code?: string;
   delivery_notes?: string;
+  delivery_fee?: number;
+  delivery_latitude?: string;
+  delivery_longitude?: string;
+  delivery_zone_id?: string;
   created_at: string;
   updated_at: string;
 }
