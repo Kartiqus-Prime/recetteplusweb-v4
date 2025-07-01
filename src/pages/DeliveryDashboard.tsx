@@ -8,14 +8,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
 import { useAssignOrderToDelivery, useUpdateDeliveryLocation } from '@/hooks/useDeliveryTracking';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import Header from '@/components/Header';
-import { QrCode, MapPin, Package, Truck, CheckCircle } from 'lucide-react';
+import { QrCode, MapPin, Package, Truck, CheckCircle, ExternalLink } from 'lucide-react';
+import { formatCFA } from '@/lib/currency';
 
 const DeliveryDashboard = () => {
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const [qrCode, setQrCode] = useState('');
-  const [selectedOrderId, setSelectedOrderId] = useState('');
 
   const { data: orders = [], refetch } = useOrders();
   const assignOrderMutation = useAssignOrderToDelivery();
@@ -107,6 +106,18 @@ const DeliveryDashboard = () => {
     (window as any).deliveryWatchId = watchId;
   };
 
+  const openGoogleMaps = (order: any) => {
+    if (order.delivery_latitude && order.delivery_longitude) {
+      const url = `https://www.google.com/maps?q=${order.delivery_latitude},${order.delivery_longitude}`;
+      window.open(url, '_blank');
+    } else if (order.delivery_address) {
+      const address = `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.postal_code}`;
+      const encodedAddress = encodeURIComponent(address);
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+      window.open(url, '_blank');
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'validated': return 'bg-blue-100 text-blue-800';
@@ -128,61 +139,60 @@ const DeliveryDashboard = () => {
   };
 
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100">
-        <div className="container mx-auto px-4 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Tableau de bord livreur</h1>
-            <p className="text-gray-600">Gérez vos livraisons et suivez vos commandes</p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6 lg:mb-8">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Tableau de bord livreur</h1>
+          <p className="text-gray-600">Gérez vos livraisons et suivez vos commandes</p>
+        </div>
 
-          {/* Scanner QR */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <QrCode className="h-5 w-5" />
-                <span>Scanner une commande</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex space-x-2">
-                <Input
-                  placeholder="Code QR de la commande"
-                  value={qrCode}
-                  onChange={(e) => setQrCode(e.target.value)}
-                  className="flex-1"
-                />
-                <Button 
-                  onClick={handleScanQR}
-                  disabled={assignOrderMutation.isPending}
-                  className="bg-orange-500 hover:bg-orange-600"
-                >
-                  {assignOrderMutation.isPending ? 'Traitement...' : 'Scanner'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Scanner QR */}
+        <Card className="mb-6 lg:mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <QrCode className="h-5 w-5" />
+              <span>Scanner une commande</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <Input
+                placeholder="Code QR de la commande"
+                value={qrCode}
+                onChange={(e) => setQrCode(e.target.value)}
+                className="flex-1"
+              />
+              <Button 
+                onClick={handleScanQR}
+                disabled={assignOrderMutation.isPending}
+                className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
+              >
+                {assignOrderMutation.isPending ? 'Traitement...' : 'Scanner'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Liste des commandes */}
-          <div className="grid gap-6">
-            <h2 className="text-xl font-semibold text-gray-900">Mes commandes</h2>
-            
-            {myOrders.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <p className="text-gray-600">Aucune commande assignée pour le moment.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              myOrders.map((order) => {
+        {/* Liste des commandes */}
+        <div className="space-y-4 lg:space-y-6">
+          <h2 className="text-lg lg:text-xl font-semibold text-gray-900">Mes commandes</h2>
+          
+          {myOrders.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 lg:p-8 text-center">
+                <p className="text-gray-600">Aucune commande assignée pour le moment.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 lg:gap-6">
+              {myOrders.map((order) => {
                 const nextAction = getNextAction(order.status);
                 
                 return (
-                  <Card key={order.id}>
+                  <Card key={order.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle>Commande #{order.id.slice(0, 8)}</CardTitle>
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                        <CardTitle className="text-lg">Commande #{order.id.slice(0, 8)}</CardTitle>
                         <Badge className={getStatusColor(order.status)}>
                           {order.status}
                         </Badge>
@@ -190,7 +200,7 @@ const DeliveryDashboard = () => {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-start space-x-2">
-                        <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
+                        <MapPin className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
                         <div className="text-sm">
                           <div className="font-medium">Adresse de livraison</div>
                           <div className="text-gray-600">
@@ -200,35 +210,44 @@ const DeliveryDashboard = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                         <span className="text-sm text-gray-600">Montant</span>
-                        <span className="font-semibold">
-                          {new Intl.NumberFormat('fr-FR', {
-                            style: 'currency',
-                            currency: 'EUR'
-                          }).format(order.total_amount)}
+                        <span className="font-semibold text-lg">
+                          {formatCFA(order.total_amount)}
                         </span>
                       </div>
 
-                      {nextAction && (
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        {nextAction && (
+                          <Button
+                            onClick={() => handleUpdateStatus(order.id, nextAction.action)}
+                            disabled={updateStatusMutation.isPending}
+                            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 flex-1"
+                          >
+                            <nextAction.icon className="h-4 w-4 mr-2" />
+                            {nextAction.label}
+                          </Button>
+                        )}
+                        
                         <Button
-                          onClick={() => handleUpdateStatus(order.id, nextAction.action)}
-                          disabled={updateStatusMutation.isPending}
-                          className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                          variant="outline"
+                          onClick={() => openGoogleMaps(order)}
+                          className="flex-1 sm:flex-none"
                         >
-                          <nextAction.icon className="h-4 w-4 mr-2" />
-                          {nextAction.label}
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Ouvrir Maps
                         </Button>
-                      )}
+                      </div>
                     </CardContent>
                   </Card>
                 );
               })
             )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

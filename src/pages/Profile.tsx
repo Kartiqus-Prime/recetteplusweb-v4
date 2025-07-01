@@ -1,216 +1,316 @@
 
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { useUpdateSupabaseProfile } from '@/hooks/useSupabaseProfiles';
-import { useUserOrders } from '@/hooks/useOrders';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import UpdateProfileForm from '@/components/UpdateProfileForm';
-import OrderStatusCard from '@/components/OrderStatusCard';
-import DeliveryTracker from '@/components/DeliveryTracker';
-import { ShoppingCart, Plus } from 'lucide-react';
-import CreateOrderDialog from '@/components/CreateOrderDialog';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Settings, MapPin, Heart, ShoppingBag, Upload, Camera } from 'lucide-react';
 
 const Profile = () => {
-  const { currentUser, logout } = useAuth();
-  const { data: userProfile, isLoading, refetch } = useUserProfile();
-  const updateProfile = useUpdateSupabaseProfile();
-  const [isEditing, setIsEditing] = useState(false);
-  const [showCreateOrder, setShowCreateOrder] = useState(false);
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Safely access preferences with proper type casting
-  const preferences = userProfile?.preferences as any;
-  const [formValues, setFormValues] = useState({
-    displayName: userProfile?.display_name || '',
-    photoURL: userProfile?.photo_url || '',
-    dietaryRestrictions: preferences?.dietaryRestrictions || [],
-    favoriteCategories: preferences?.favoriteCategories || [],
+  const [profile, setProfile] = useState({
+    display_name: currentUser?.user_metadata?.display_name || '',
+    email: currentUser?.email || '',
+    phone_number: '',
+    bio: '',
+    location: '',
+    date_of_birth: '',
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormValues({
-      ...formValues,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const handleUpdateProfile = async () => {
+    if (!currentUser) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    setLoading(true);
     try {
-      await updateProfile.mutateAsync({
-        userId: currentUser!.id,
-        data: {
-          display_name: formValues.displayName,
-          photo_url: formValues.photoURL,
-          preferences: {
-            dietaryRestrictions: formValues.dietaryRestrictions,
-            favoriteCategories: formValues.favoriteCategories,
-          },
-        },
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: currentUser.id,
+          ...profile,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Profil mis à jour",
+        description: "Vos informations ont été sauvegardées avec succès."
       });
-      setIsEditing(false);
-      refetch();
-    } catch (error) {
-      console.error('Error updating profile:', error);
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleLogout = async () => {
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !currentUser) return;
+
+    setLoading(true);
     try {
-      await logout();
-    } catch (error) {
-      console.error('Error during logout:', error);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${currentUser.id}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: currentUser.id,
+          photo_url: data.publicUrl,
+          updated_at: new Date().toISOString()
+        });
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Avatar mis à jour",
+        description: "Votre photo de profil a été mise à jour avec succès."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
-
-  const { data: userOrders = [] } = useUserOrders(currentUser?.id);
-
-  const toggleCreateOrder = () => {
-    setShowCreateOrder(!showCreateOrder);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
-      <Header />
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Profile Header */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Mon Profil</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Nom d'utilisateur:</Label>
-                  <p className="font-semibold">{userProfile?.display_name || 'Non défini'}</p>
-                </div>
-                <div>
-                  <Label>Email:</Label>
-                  <p className="font-semibold">{currentUser?.email}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Tabs */}
-          <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="profile">Profil</TabsTrigger>
-              <TabsTrigger value="orders">Mes Commandes</TabsTrigger>
-              <TabsTrigger value="preferences">Préférences</TabsTrigger>
-              <TabsTrigger value="settings">Paramètres</TabsTrigger>
-            </TabsList>
-
-            {/* Profile Tab */}
-            <TabsContent value="profile">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Informations du Profil</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <UpdateProfileForm userProfile={userProfile} refetch={refetch} />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Orders Tab */}
-            <TabsContent value="orders">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center space-x-2">
-                      <ShoppingCart className="h-5 w-5" />
-                      <span>Mes Commandes</span>
-                    </CardTitle>
-                    <CreateOrderDialog>
-                      <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Nouvelle Commande
-                      </Button>
-                    </CreateOrderDialog>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {userOrders.length === 0 ? (
-                    <div className="text-center py-8">
-                      <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600 mb-4">Vous n'avez pas encore passé de commande</p>
-                      <CreateOrderDialog>
-                        <Button>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Passer ma première commande
-                        </Button>
-                      </CreateOrderDialog>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {userOrders.map((order) => (
-                        <div key={order.id}>
-                          <OrderStatusCard order={order} />
-                          {['assigned', 'picked_up', 'in_transit'].includes(order.status) && (
-                            <div className="mt-4">
-                              <DeliveryTracker orderId={order.id} />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Preferences Tab */}
-            <TabsContent value="preferences">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Préférences</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div>
-                    <Label>Restrictions alimentaires:</Label>
-                    <p>{preferences?.dietaryRestrictions?.join(', ') || 'Aucune'}</p>
-                  </div>
-                  <div>
-                    <Label>Catégories favorites:</Label>
-                    <p>{preferences?.favoriteCategories?.join(', ') || 'Aucune'}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Settings Tab */}
-            <TabsContent value="settings">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Paramètres</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Button onClick={handleLogout} variant="destructive">
-                    Déconnexion
-                  </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Mon Profil</h1>
+          <p className="text-gray-600">Gérez vos informations personnelles et préférences</p>
         </div>
+
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">Profil</span>
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Paramètres</span>
+            </TabsTrigger>
+            <TabsTrigger value="addresses" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              <span className="hidden sm:inline">Adresses</span>
+            </TabsTrigger>
+            <TabsTrigger value="favorites" className="flex items-center gap-2">
+              <Heart className="h-4 w-4" />
+              <span className="hidden sm:inline">Favoris</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Informations personnelles</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Avatar Section */}
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center text-white text-2xl font-bold">
+                      {profile.display_name.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute -bottom-1 -right-1 bg-orange-500 text-white rounded-full p-1 hover:bg-orange-600 transition-colors"
+                    >
+                      <Camera className="h-3 w-3" />
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      className="hidden"
+                    />
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <h3 className="font-semibold text-lg">{profile.display_name || 'Utilisateur'}</h3>
+                    <p className="text-gray-600">{profile.email}</p>
+                    <Badge variant="outline" className="mt-1">
+                      Membre depuis {new Date(currentUser?.created_at || '').toLocaleDateString('fr-FR')}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Form Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="display_name">Nom d'affichage</Label>
+                    <Input
+                      id="display_name"
+                      value={profile.display_name}
+                      onChange={(e) => setProfile(prev => ({ ...prev, display_name: e.target.value }))}
+                      placeholder="Votre nom d'affichage"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={profile.email}
+                      onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="votre@email.com"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone_number">Téléphone</Label>
+                    <Input
+                      id="phone_number"
+                      value={profile.phone_number}
+                      onChange={(e) => setProfile(prev => ({ ...prev, phone_number: e.target.value }))}
+                      placeholder="+223 XX XX XX XX"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="date_of_birth">Date de naissance</Label>
+                    <Input
+                      id="date_of_birth"
+                      type="date"
+                      value={profile.date_of_birth}
+                      onChange={(e) => setProfile(prev => ({ ...prev, date_of_birth: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="location">Localisation</Label>
+                  <Input
+                    id="location"
+                    value={profile.location}
+                    onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))}
+                    placeholder="Bamako, Mali"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Bio</Label>
+                  <Textarea
+                    id="bio"
+                    value={profile.bio}
+                    onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
+                    placeholder="Parlez-nous de vous..."
+                    rows={3}
+                  />
+                </div>
+
+                <Button 
+                  onClick={handleUpdateProfile}
+                  disabled={loading}
+                  className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600"
+                >
+                  {loading ? 'Mise à jour...' : 'Sauvegarder les modifications'}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card>
+              <CardHeader>
+                <CardTitle>Paramètres du compte</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Notifications par email</h4>
+                      <p className="text-sm text-gray-600">Recevoir des notifications par email</p>
+                    </div>
+                    <input type="checkbox" className="rounded" defaultChecked />
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Newsletter</h4>
+                      <p className="text-sm text-gray-600">Recevoir notre newsletter hebdomadaire</p>
+                    </div>
+                    <input type="checkbox" className="rounded" />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Profil public</h4>
+                      <p className="text-sm text-gray-600">Rendre votre profil visible aux autres utilisateurs</p>
+                    </div>
+                    <input type="checkbox" className="rounded" defaultChecked />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="addresses">
+            <Card>
+              <CardHeader>
+                <CardTitle>Mes adresses</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Button className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Ajouter une nouvelle adresse
+                  </Button>
+                  <div className="text-center py-8 text-gray-500">
+                    Aucune adresse enregistrée pour le moment
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="favorites">
+            <Card>
+              <CardHeader>
+                <CardTitle>Mes favoris</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <Heart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>Aucun favori pour le moment</p>
+                  <p className="text-sm">Ajoutez des recettes et produits à vos favoris pour les retrouver facilement</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-      <Footer />
     </div>
   );
 };

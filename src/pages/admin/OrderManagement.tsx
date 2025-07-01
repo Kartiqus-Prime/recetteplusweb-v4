@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useOrders, useUpdateOrderStatus, useValidateOrder } from '@/hooks/useOrders';
 import { useSupabaseUsers } from '@/hooks/useSupabaseUsers';
-import { Package, Clock, CheckCircle, User, Truck, MapPin, Search } from 'lucide-react';
+import { Package, Clock, CheckCircle, User, Truck, MapPin, Search, ExternalLink } from 'lucide-react';
 import { Order } from '@/hooks/useOrders';
 import { formatCFA } from '@/lib/currency';
 
@@ -68,6 +69,18 @@ const OrderManagement: React.FC = () => {
     });
   };
 
+  const openGoogleMaps = (order: Order) => {
+    if (order.delivery_latitude && order.delivery_longitude) {
+      const url = `https://www.google.com/maps?q=${order.delivery_latitude},${order.delivery_longitude}`;
+      window.open(url, '_blank');
+    } else if (order.delivery_address) {
+      const address = `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.postal_code}`;
+      const encodedAddress = encodeURIComponent(address);
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+      window.open(url, '_blank');
+    }
+  };
+
   const deliveryPersons = users.filter(user => 
     ['delivery_person', 'admin', 'manager', 'admin_assistant'].includes(user.role || 'user')
   );
@@ -96,21 +109,21 @@ const OrderManagement: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Gestion des Commandes</h1>
-        <div className="flex items-center space-x-4">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <h1 className="text-xl lg:text-2xl font-bold">Gestion des Commandes</h1>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full lg:w-auto">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Rechercher une commande..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-64"
+              className="pl-10 w-full sm:w-64"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Filtrer par statut" />
             </SelectTrigger>
             <SelectContent>
@@ -128,14 +141,14 @@ const OrderManagement: React.FC = () => {
       </div>
 
       {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-yellow-500" />
+              <Clock className="h-4 lg:h-5 w-4 lg:w-5 text-yellow-500" />
               <div>
-                <p className="text-sm text-gray-600">En attente</p>
-                <p className="text-2xl font-bold">{ordersByStatus.pending.length}</p>
+                <p className="text-xs lg:text-sm text-gray-600">En attente</p>
+                <p className="text-lg lg:text-2xl font-bold">{ordersByStatus.pending.length}</p>
               </div>
             </div>
           </CardContent>
@@ -143,10 +156,10 @@ const OrderManagement: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-blue-500" />
+              <CheckCircle className="h-4 lg:h-5 w-4 lg:w-5 text-blue-500" />
               <div>
-                <p className="text-sm text-gray-600">Validées</p>
-                <p className="text-2xl font-bold">{ordersByStatus.validated.length}</p>
+                <p className="text-xs lg:text-sm text-gray-600">Validées</p>
+                <p className="text-lg lg:text-2xl font-bold">{ordersByStatus.validated.length}</p>
               </div>
             </div>
           </CardContent>
@@ -154,10 +167,10 @@ const OrderManagement: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <User className="h-5 w-5 text-purple-500" />
+              <User className="h-4 lg:h-5 w-4 lg:w-5 text-purple-500" />
               <div>
-                <p className="text-sm text-gray-600">Assignées</p>
-                <p className="text-2xl font-bold">{ordersByStatus.assigned.length}</p>
+                <p className="text-xs lg:text-sm text-gray-600">Assignées</p>
+                <p className="text-lg lg:text-2xl font-bold">{ordersByStatus.assigned.length}</p>
               </div>
             </div>
           </CardContent>
@@ -165,21 +178,21 @@ const OrderManagement: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Truck className="h-5 w-5 text-indigo-500" />
+              <Truck className="h-4 lg:h-5 w-4 lg:w-5 text-indigo-500" />
               <div>
-                <p className="text-sm text-gray-600">En cours</p>
-                <p className="text-2xl font-bold">{ordersByStatus.in_progress.length}</p>
+                <p className="text-xs lg:text-sm text-gray-600">En cours</p>
+                <p className="text-lg lg:text-2xl font-bold">{ordersByStatus.in_progress.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="col-span-2 lg:col-span-1">
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
+              <CheckCircle className="h-4 lg:h-5 w-4 lg:w-5 text-green-500" />
               <div>
-                <p className="text-sm text-gray-600">Terminées</p>
-                <p className="text-2xl font-bold">{ordersByStatus.completed.length}</p>
+                <p className="text-xs lg:text-sm text-gray-600">Terminées</p>
+                <p className="text-lg lg:text-2xl font-bold">{ordersByStatus.completed.length}</p>
               </div>
             </div>
           </CardContent>
@@ -192,87 +205,99 @@ const OrderManagement: React.FC = () => {
           <CardTitle>Liste des Commandes</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Commande</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Montant</TableHead>
-                <TableHead>Adresse</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Code QR</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredOrders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">
-                    #{order.id.slice(0, 8)}
-                  </TableCell>
-                  <TableCell>
-                    {users.find(u => u.id === order.user_id)?.display_name || 'Utilisateur'}
-                  </TableCell>
-                  <TableCell>{formatCFA(order.total_amount)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-1">
-                      <MapPin className="h-3 w-3 text-gray-400" />
-                      <span className="text-sm">
-                        {order.delivery_address.city}, {order.delivery_address.postal_code}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(order.status)}>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[100px]">Commande</TableHead>
+                  <TableHead className="min-w-[100px]">Client</TableHead>
+                  <TableHead className="min-w-[100px]">Montant</TableHead>
+                  <TableHead className="min-w-[150px]">Adresse</TableHead>
+                  <TableHead className="min-w-[100px]">Statut</TableHead>
+                  <TableHead className="min-w-[80px]">Code QR</TableHead>
+                  <TableHead className="min-w-[100px]">Date</TableHead>
+                  <TableHead className="min-w-[200px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredOrders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-medium">
+                      #{order.id.slice(0, 8)}
+                    </TableCell>
+                    <TableCell className="truncate">
+                      {users.find(u => u.id === order.user_id)?.display_name || 'Utilisateur'}
+                    </TableCell>
+                    <TableCell className="font-medium">{formatCFA(order.total_amount)}</TableCell>
+                    <TableCell>
                       <div className="flex items-center space-x-1">
-                        {getStatusIcon(order.status)}
-                        <span>{getStatusText(order.status)}</span>
+                        <MapPin className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                        <span className="text-sm truncate">
+                          {order.delivery_address.city}, {order.delivery_address.postal_code}
+                        </span>
                       </div>
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {order.qr_code?.slice(-8)}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(order.created_at).toLocaleDateString('fr-FR')}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      {order.status === 'pending' && (
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={`${getStatusColor(order.status)} text-xs`}>
+                        <div className="flex items-center space-x-1">
+                          {getStatusIcon(order.status)}
+                          <span>{getStatusText(order.status)}</span>
+                        </div>
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {order.qr_code?.slice(-8)}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {new Date(order.created_at).toLocaleDateString('fr-FR')}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col lg:flex-row gap-2">
+                        {order.status === 'pending' && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleValidateOrder(order.id)}
+                            disabled={validateOrder.isPending}
+                            className="text-xs"
+                          >
+                            Valider
+                          </Button>
+                        )}
                         <Button
                           size="sm"
-                          onClick={() => handleValidateOrder(order.id)}
-                          disabled={validateOrder.isPending}
+                          variant="outline"
+                          onClick={() => openGoogleMaps(order)}
+                          className="text-xs"
                         >
-                          Valider
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Maps
                         </Button>
-                      )}
-                      {order.status !== 'delivered' && order.status !== 'cancelled' && (
-                        <Select
-                          value={order.status}
-                          onValueChange={(value) => handleUpdateStatus(order.id, value as Order['status'])}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">En attente</SelectItem>
-                            <SelectItem value="validated">Validée</SelectItem>
-                            <SelectItem value="assigned">Assignée</SelectItem>
-                            <SelectItem value="picked_up">Récupérée</SelectItem>
-                            <SelectItem value="in_transit">En livraison</SelectItem>
-                            <SelectItem value="delivered">Livrée</SelectItem>
-                            <SelectItem value="cancelled">Annulée</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                        {order.status !== 'delivered' && order.status !== 'cancelled' && (
+                          <Select
+                            value={order.status}
+                            onValueChange={(value) => handleUpdateStatus(order.id, value as Order['status'])}
+                          >
+                            <SelectTrigger className="w-32 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">En attente</SelectItem>
+                              <SelectItem value="validated">Validée</SelectItem>
+                              <SelectItem value="assigned">Assignée</SelectItem>
+                              <SelectItem value="picked_up">Récupérée</SelectItem>
+                              <SelectItem value="in_transit">En livraison</SelectItem>
+                              <SelectItem value="delivered">Livrée</SelectItem>
+                              <SelectItem value="cancelled">Annulée</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
