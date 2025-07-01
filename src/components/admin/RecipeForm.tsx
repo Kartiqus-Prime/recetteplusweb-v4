@@ -29,11 +29,13 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipe, onSubmit, onCancel, isL
     description: recipe?.description || '',
     image: recipe?.image || '',
     cook_time: recipe?.cook_time || 30,
+    prep_time: recipe?.prep_time || 15,
     servings: recipe?.servings || 4,
     difficulty: recipe?.difficulty || 'Moyen' as const,
     rating: recipe?.rating || 4.0,
     category: recipe?.category || 'Plats traditionnels maliens' as RecipeCategory,
     video_id: recipe?.video_id || '',
+    view_count: recipe?.view_count || 0,
     created_by: recipe?.created_by || currentUser?.id || ''
   });
 
@@ -55,13 +57,15 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipe, onSubmit, onCancel, isL
       return;
     }
 
-    // Ensure created_by is set to current user's ID for new recipes
+    // Ensure all required properties are included
     const recipeData = {
       ...formData,
       created_by: recipe?.created_by || currentUser?.id || '',
       ingredients: validIngredients,
       instructions: instructions.filter(inst => inst.trim() !== ''),
-      video_id: formData.video_id || undefined
+      video_id: formData.video_id || null,
+      prep_time: formData.prep_time,
+      view_count: formData.view_count
     };
 
     onSubmit(recipeData);
@@ -162,9 +166,18 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipe, onSubmit, onCancel, isL
         </Select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div>
-          <Label htmlFor="cook_time">Temps (min) *</Label>
+          <Label htmlFor="prep_time">Préparation (min)</Label>
+          <Input
+            id="prep_time"
+            type="number"
+            value={formData.prep_time}
+            onChange={(e) => setFormData({...formData, prep_time: parseInt(e.target.value) || 0})}
+          />
+        </div>
+        <div>
+          <Label htmlFor="cook_time">Cuisson (min) *</Label>
           <Input
             id="cook_time"
             type="number"
