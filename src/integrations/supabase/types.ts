@@ -346,6 +346,7 @@ export type Database = {
           delivery_longitude: string | null
           delivery_notes: string | null
           delivery_zone_id: string | null
+          google_maps_link: string | null
           id: string
           items: Json
           picked_up_at: string | null
@@ -368,6 +369,7 @@ export type Database = {
           delivery_longitude?: string | null
           delivery_notes?: string | null
           delivery_zone_id?: string | null
+          google_maps_link?: string | null
           id?: string
           items: Json
           picked_up_at?: string | null
@@ -390,6 +392,7 @@ export type Database = {
           delivery_longitude?: string | null
           delivery_notes?: string | null
           delivery_zone_id?: string | null
+          google_maps_link?: string | null
           id?: string
           items?: Json
           picked_up_at?: string | null
@@ -1101,6 +1104,10 @@ export type Database = {
       }
       find_nearest_delivery_zone: {
         Args: { lat: number; lon: number }
+        Returns: string
+      }
+      generate_google_maps_link: {
+        Args: { lat: string; lng: string }
         Returns: string
       }
       get_personal_cart_details: {

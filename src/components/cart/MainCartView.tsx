@@ -8,7 +8,7 @@ import { ShoppingCart, Package, ChefHat, User, Plus, Minus, Trash2 } from 'lucid
 import { usePersonalCart, useRecipeUserCarts } from '@/hooks/useSupabaseCart';
 import { formatCFA, DELIVERY_FEE } from '@/lib/currency';
 import { useNavigate } from 'react-router-dom';
-import OrderForm from './OrderForm';
+import SimpleOrderForm from './SimpleOrderForm';
 
 const MainCartView = () => {
   const { personalCart, personalCartItems, updateQuantity, removeItem } = usePersonalCart();
@@ -49,7 +49,7 @@ const MainCartView = () => {
         >
           ← Retour au panier
         </Button>
-        <OrderForm
+        <SimpleOrderForm
           cartItems={allCartItems}
           subtotal={subtotal}
           onOrderComplete={handleOrderComplete}
