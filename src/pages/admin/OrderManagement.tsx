@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useOrders, useUpdateOrderStatus, useValidateOrder } from '@/hooks/useOrders';
 import { useSupabaseUsers } from '@/hooks/useSupabaseUsers';
 import { Package, Clock, CheckCircle, User, Truck, MapPin, Search } from 'lucide-react';
 import { Order } from '@/hooks/useOrders';
+import { formatCFA } from '@/lib/currency';
 
 const OrderManagement: React.FC = () => {
   const { data: orders = [], isLoading } = useOrders();
@@ -69,14 +68,6 @@ const OrderManagement: React.FC = () => {
     });
   };
 
-  const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount);
-  };
-
-  // Corriger la logique de filtrage des livreurs avec les nouveaux rôles
   const deliveryPersons = users.filter(user => 
     ['delivery_person', 'admin', 'manager', 'admin_assistant'].includes(user.role || 'user')
   );
@@ -223,7 +214,7 @@ const OrderManagement: React.FC = () => {
                   <TableCell>
                     {users.find(u => u.id === order.user_id)?.display_name || 'Utilisateur'}
                   </TableCell>
-                  <TableCell>{formatPrice(order.total_amount)}</TableCell>
+                  <TableCell>{formatCFA(order.total_amount)}</TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-1">
                       <MapPin className="h-3 w-3 text-gray-400" />

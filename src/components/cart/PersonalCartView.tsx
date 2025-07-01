@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { User, Plus, Minus, Trash2 } from 'lucide-react';
 import { usePersonalCart } from '@/hooks/useSupabaseCart';
-import { formatPrice } from '@/lib/firestore';
+import { formatCFA } from '@/lib/currency';
 
 const PersonalCartView = () => {
   const { 
@@ -80,7 +80,7 @@ const PersonalCartView = () => {
                   {item.products?.category}
                 </Badge>
                 <p className="text-orange-500 font-semibold mt-1">
-                  {formatPrice(item.products?.price || 0)}
+                  {formatCFA(item.products?.price || 0)}
                 </p>
               </div>
               <div className="flex items-center space-x-2">
@@ -125,7 +125,7 @@ const PersonalCartView = () => {
         <CardContent>
           <div className="flex justify-between items-center text-lg font-semibold">
             <span>Total</span>
-            <span className="text-orange-500">{formatPrice(subtotal)}</span>
+            <span className="text-orange-500">{formatCFA(subtotal)}</span>
           </div>
           <p className="text-sm text-gray-600 mt-2">
             Ce panier est automatiquement inclus dans votre panier principal

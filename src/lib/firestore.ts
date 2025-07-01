@@ -300,7 +300,12 @@ export const userService = {
 
 // Utilitaires pour formater les prix en FCFA
 export const formatPrice = (price: number): string => {
-  return `${price.toLocaleString('fr-FR')} FCFA`;
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'XOF',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(price);
 };
 
 export const formatPriceCompact = (price: number): string => {
