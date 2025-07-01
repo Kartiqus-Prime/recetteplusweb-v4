@@ -341,7 +341,11 @@ export type Database = {
           created_at: string | null
           delivered_at: string | null
           delivery_address: Json
+          delivery_fee: number | null
+          delivery_latitude: string | null
+          delivery_longitude: string | null
           delivery_notes: string | null
+          delivery_zone_id: string | null
           id: string
           items: Json
           picked_up_at: string | null
@@ -359,7 +363,11 @@ export type Database = {
           created_at?: string | null
           delivered_at?: string | null
           delivery_address: Json
+          delivery_fee?: number | null
+          delivery_latitude?: string | null
+          delivery_longitude?: string | null
           delivery_notes?: string | null
+          delivery_zone_id?: string | null
           id?: string
           items: Json
           picked_up_at?: string | null
@@ -377,7 +385,11 @@ export type Database = {
           created_at?: string | null
           delivered_at?: string | null
           delivery_address?: Json
+          delivery_fee?: number | null
+          delivery_latitude?: string | null
+          delivery_longitude?: string | null
           delivery_notes?: string | null
+          delivery_zone_id?: string | null
           id?: string
           items?: Json
           picked_up_at?: string | null
@@ -746,10 +758,12 @@ export type Database = {
           image: string | null
           ingredients: Json
           instructions: string[]
+          prep_time: number | null
           rating: number | null
           servings: number
           title: string
           video_id: string | null
+          view_count: number | null
         }
         Insert: {
           category: string
@@ -762,10 +776,12 @@ export type Database = {
           image?: string | null
           ingredients: Json
           instructions: string[]
+          prep_time?: number | null
           rating?: number | null
           servings: number
           title: string
           video_id?: string | null
+          view_count?: number | null
         }
         Update: {
           category?: string
@@ -778,10 +794,12 @@ export type Database = {
           image?: string | null
           ingredients?: Json
           instructions?: string[]
+          prep_time?: number | null
           rating?: number | null
           servings?: number
           title?: string
           video_id?: string | null
+          view_count?: number | null
         }
         Relationships: []
       }
@@ -983,6 +1001,35 @@ export type Database = {
           },
         ]
       }
+      video_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_likes_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       videos: {
         Row: {
           category: string
@@ -1079,6 +1126,10 @@ export type Database = {
       has_order_validation_permission: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      increment_recipe_views: {
+        Args: { recipe_uuid: string }
+        Returns: undefined
       }
       increment_video_likes: {
         Args: { video_id: string }
