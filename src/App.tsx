@@ -20,6 +20,7 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import About from '@/pages/About';
 import PreconfiguredCarts from '@/pages/PreconfiguredCarts';
+import PreconfiguredCartDetail from '@/pages/PreconfiguredCartDetail';
 import Favorites from '@/pages/Favorites';
 import NotFound from '@/pages/NotFound';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
@@ -34,7 +35,6 @@ import NewsletterManagement from '@/pages/admin/NewsletterManagement';
 import DeliveryDashboard from '@/pages/DeliveryDashboard';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AdminLayout from '@/components/AdminLayout';
-import './App.css';
 
 const queryClient = new QueryClient();
 
@@ -57,6 +57,7 @@ function App() {
                 <Route path="/panier" element={<Cart />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/paniers-preconfigures" element={<PreconfiguredCarts />} />
+                <Route path="/paniers-preconfigures/:id" element={<PreconfiguredCartDetail />} />
                 <Route path="/favoris" element={<Favorites />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/login" element={<Login />} />

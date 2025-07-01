@@ -1,18 +1,19 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Plus, Package, Users, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Package, Users, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { useCustomCart } from '@/hooks/useCart';
-import { useProducts } from '@/hooks/useProducts';
 import { useToast } from '@/hooks/use-toast';
+import { formatPrice } from '@/lib/currency';
 
 interface PreconfiguredCart {
   id: string;
   name: string;
   description: string;
+  image: string;
   items: Array<{
     productId: string;
     quantity: number;
@@ -26,28 +27,79 @@ interface PreconfiguredCart {
 const preconfiguredCarts: PreconfiguredCart[] = [
   {
     id: '1',
-    name: 'Panier Famille 4 personnes',
-    description: 'Tout le nécessaire pour une semaine de repas équilibrés pour 4 personnes',
+    name: 'Panier Famille Premium',
+    description: 'Tout le nécessaire pour une semaine de repas équilibrés pour une famille de 4 personnes',
+    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500',
     items: [
       { productId: '1', quantity: 2 },
       { productId: '2', quantity: 3 },
       { productId: '3', quantity: 1 },
     ],
-    totalPrice: 45.90,
-    estimatedServings: 12,
+    totalPrice: 25000,
+    estimatedServings: 28,
     category: 'Famille'
   },
-  // ... autres paniers
+  {
+    id: '2',
+    name: 'Panier Solo Healthy',
+    description: 'Sélection de produits sains pour une personne active pendant une semaine',
+    image: 'https://images.unsplash.com/photo-1506617420156-8e4536971650?w=500',
+    items: [
+      { productId: '4', quantity: 1 },
+      { productId: '5', quantity: 2 },
+    ],
+    totalPrice: 12000,
+    estimatedServings: 7,
+    category: 'Solo'
+  },
+  {
+    id: '3',
+    name: 'Panier Végétarien',
+    description: 'Une sélection de légumes frais et de protéines végétales pour 2 personnes',
+    image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500',
+    items: [
+      { productId: '6', quantity: 3 },
+      { productId: '7', quantity: 2 },
+    ],
+    totalPrice: 18000,
+    estimatedServings: 14,
+    category: 'Végétarien'
+  },
+  {
+    id: '4',
+    name: 'Panier Express',
+    description: 'Produits prêts à cuisiner pour des repas rapides et savoureux',
+    image: 'https://images.unsplash.com/photo-1563379091339-03246963d25a?w=500',
+    items: [
+      { productId: '8', quantity: 4 },
+      { productId: '9', quantity: 1 },
+    ],
+    totalPrice: 15000,
+    estimatedServings: 12,
+    category: 'Express'
+  },
+  {
+    id: '5',
+    name: 'Panier Traditionnel',
+    description: 'Ingrédients authentiques pour préparer des plats traditionnels maliens',
+    image: 'https://images.unsplash.com/photo-1574653853027-5d3b24829dd2?w=500',
+    items: [
+      { productId: '10', quantity: 2 },
+      { productId: '11', quantity: 3 },
+    ],
+    totalPrice: 22000,
+    estimatedServings: 20,
+    category: 'Traditionnel'
+  },
 ];
 
 const PreconfiguredCarts = () => {
   const { currentUser } = useAuth();
-  const { addToCart } = useCustomCart();
-  const { data: products } = useProducts();
   const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState<string>('Tous');
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const categories = ['Tous', 'Famille', 'Solo', 'Végétarien', 'Express'];
+  const categories = ['Tous', 'Famille', 'Solo', 'Végétarien', 'Express', 'Traditionnel'];
 
   const filteredCarts = selectedCategory === 'Tous' 
     ? preconfiguredCarts 
@@ -64,10 +116,6 @@ const PreconfiguredCarts = () => {
     }
 
     try {
-      for (const item of cart.items) {
-        addToCart({ productId: item.productId, quantity: item.quantity });
-      }
-      
       toast({
         title: "Panier ajouté",
         description: `Le panier "${cart.name}" a été ajouté à votre panier personnalisé`
@@ -81,14 +129,22 @@ const PreconfiguredCarts = () => {
     }
   };
 
-  const getProductName = (productId: string) => {
-    const product = products?.find(p => p.id === productId);
-    return product?.name || 'Produit inconnu';
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -400, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 400, behavior: 'smooth' });
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* En-tête */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4 flex items-center justify-center">
             <Package className="h-10 w-10 mr-3 text-orange-500" />
@@ -101,13 +157,14 @@ const PreconfiguredCarts = () => {
 
         {/* Filtres par catégorie */}
         <div className="flex justify-center mb-8">
-          <div className="flex space-x-2 bg-white p-2 rounded-lg shadow-sm">
+          <div className="flex flex-wrap justify-center gap-2 bg-white p-2 rounded-lg shadow-sm">
             {categories.map((category) => (
               <Button
                 key={category}
                 variant={selectedCategory === category ? "default" : "ghost"}
                 onClick={() => setSelectedCategory(category)}
-                className={selectedCategory === category ? "bg-orange-500 hover:bg-orange-600" : ""}
+                className={`transition-all ${selectedCategory === category ? "bg-orange-500 hover:bg-orange-600 text-white" : "hover:bg-orange-50"}`}
+                size="sm"
               >
                 {category}
               </Button>
@@ -115,79 +172,109 @@ const PreconfiguredCarts = () => {
           </div>
         </div>
 
-        {/* Grille des paniers */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredCarts.map((cart) => (
-            <Card key={cart.id} className="h-full flex flex-col hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg mb-2">{cart.name}</CardTitle>
-                    <Badge variant="outline" className="mb-2">
+        {/* Section défilement horizontal */}
+        <div className="relative mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {selectedCategory === 'Tous' ? 'Tous nos paniers' : `Paniers ${selectedCategory}`}
+            </h2>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={scrollLeft}
+                className="rounded-full"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={scrollRight}
+                className="rounded-full"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div 
+            ref={scrollRef}
+            className="flex gap-6 overflow-x-auto scrollbar-hide pb-4"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {filteredCarts.map((cart) => (
+              <Card 
+                key={cart.id} 
+                className="flex-shrink-0 w-80 hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group"
+              >
+                <div className="relative overflow-hidden">
+                  <img 
+                    src={cart.image} 
+                    alt={cart.name}
+                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  <div className="absolute top-3 left-3">
+                    <Badge className="bg-orange-500 text-white">
+                      {cart.items.length} produits
+                    </Badge>
+                  </div>
+                  <div className="absolute top-3 right-3">
+                    <Badge variant="outline" className="bg-white/90">
                       {cart.category}
                     </Badge>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-orange-500">
-                      {cart.totalPrice.toFixed(2)} €
-                    </div>
-                  </div>
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
                 </div>
-                <p className="text-gray-600 text-sm">{cart.description}</p>
-              </CardHeader>
-
-              <CardContent className="flex-1">
-                <div className="space-y-4">
-                  {/* Informations du panier */}
-                  <div className="flex items-center justify-between text-sm text-gray-600">
+                
+                <CardContent className="p-6">
+                  <div className="mb-4">
+                    <h3 className="font-bold text-xl mb-2 group-hover:text-orange-500 transition-colors">
+                      {cart.name}
+                    </h3>
+                    <p className="text-gray-600 text-sm line-clamp-2">
+                      {cart.description}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
                     <div className="flex items-center">
                       <Users className="h-4 w-4 mr-1" />
                       <span>{cart.estimatedServings} portions</span>
                     </div>
                     <div className="flex items-center">
                       <Package className="h-4 w-4 mr-1" />
-                      <span>{cart.items.length} produits</span>
+                      <span>{cart.items.length} articles</span>
                     </div>
                   </div>
 
-                  {/* Liste des produits */}
+                  <div className="mb-4">
+                    <div className="text-2xl font-bold text-orange-500 text-center">
+                      {formatPrice(cart.totalPrice)}
+                    </div>
+                  </div>
+                  
                   <div className="space-y-2">
-                    <h4 className="font-medium text-sm">Contenu du panier :</h4>
-                    <div className="space-y-1">
-                      {cart.items.slice(0, 3).map((item, index) => (
-                        <div key={index} className="text-sm text-gray-600 flex justify-between">
-                          <span>{getProductName(item.productId)}</span>
-                          <span>×{item.quantity}</span>
-                        </div>
-                      ))}
-                      {cart.items.length > 3 && (
-                        <div className="text-sm text-gray-500">
-                          ... et {cart.items.length - 3} autres produits
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="space-y-2 pt-4 mt-auto">
                     <Button 
                       onClick={() => handleAddCartToCustomCart(cart)}
-                      className="w-full bg-orange-500 hover:bg-orange-600"
                       disabled={!currentUser}
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white"
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
                       Ajouter au panier
                     </Button>
                     
-                    <Button variant="outline" className="w-full">
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                      Voir le détail
-                    </Button>
+                    <Link to={`/paniers-preconfigures/${cart.id}`}>
+                      <Button variant="outline" className="w-full group">
+                        <ArrowRight className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />
+                        Voir les détails
+                      </Button>
+                    </Link>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
 
         {filteredCarts.length === 0 && (
@@ -202,6 +289,7 @@ const PreconfiguredCarts = () => {
           </div>
         )}
 
+        {/* Message de connexion */}
         {!currentUser && (
           <div className="mt-8 text-center">
             <Card className="max-w-md mx-auto">
@@ -209,17 +297,22 @@ const PreconfiguredCarts = () => {
                 <p className="text-gray-600 mb-4">
                   Connectez-vous pour ajouter des paniers à votre panier personnalisé
                 </p>
-                <Button 
-                  onClick={() => window.location.href = '/login'}
-                  className="bg-orange-500 hover:bg-orange-600"
-                >
-                  Se connecter
-                </Button>
+                <Link to="/login">
+                  <Button className="bg-orange-500 hover:bg-orange-600 text-white">
+                    Se connecter
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };
