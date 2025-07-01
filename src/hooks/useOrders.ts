@@ -9,12 +9,7 @@ export interface Order {
   status: 'pending' | 'validated' | 'assigned' | 'picked_up' | 'in_transit' | 'delivered' | 'cancelled';
   total_amount: number;
   items: any[];
-  delivery_address: {
-    street: string;
-    city: string;
-    postal_code: string;
-    country: string;
-  };
+  delivery_address: any;
   validated_by?: string;
   validated_at?: string;
   assigned_to?: string;
@@ -27,6 +22,7 @@ export interface Order {
   delivery_latitude?: string;
   delivery_longitude?: string;
   delivery_zone_id?: string;
+  google_maps_link?: string;
   created_at: string;
   updated_at: string;
 }

@@ -2,7 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-import { SupabaseAuthProvider } from '@/contexts/SupabaseAuthContext';
+import { AuthProvider } from '@/contexts/SupabaseAuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Home from '@/pages/Home';
@@ -41,7 +41,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <SupabaseAuthProvider>
+      <AuthProvider>
         <Router>
           <div className="min-h-screen bg-gray-50 flex flex-col">
             <Header />
@@ -74,7 +74,7 @@ function App() {
                 <Route 
                   path="/delivery" 
                   element={
-                    <ProtectedRoute requiredRole="delivery_person">
+                    <ProtectedRoute>
                       <DeliveryDashboard />
                     </ProtectedRoute>
                   } 
@@ -82,7 +82,7 @@ function App() {
                 <Route 
                   path="/admin" 
                   element={
-                    <ProtectedRoute requiredRole="admin">
+                    <ProtectedRoute>
                       <AdminLayout><AdminDashboard /></AdminLayout>
                     </ProtectedRoute>
                   } 
@@ -90,7 +90,7 @@ function App() {
                 <Route 
                   path="/admin/users" 
                   element={
-                    <ProtectedRoute requiredRole="admin">
+                    <ProtectedRoute>
                       <AdminLayout><UserManagement /></AdminLayout>
                     </ProtectedRoute>
                   } 
@@ -98,7 +98,7 @@ function App() {
                 <Route 
                   path="/admin/products" 
                   element={
-                    <ProtectedRoute requiredRole="admin">
+                    <ProtectedRoute>
                       <AdminLayout><ProductManagement /></AdminLayout>
                     </ProtectedRoute>
                   } 
@@ -106,7 +106,7 @@ function App() {
                 <Route 
                   path="/admin/recipes" 
                   element={
-                    <ProtectedRoute requiredRole="admin">
+                    <ProtectedRoute>
                       <AdminLayout><RecipeManagement /></AdminLayout>
                     </ProtectedRoute>
                   } 
@@ -114,7 +114,7 @@ function App() {
                 <Route 
                   path="/admin/videos" 
                   element={
-                    <ProtectedRoute requiredRole="admin">
+                    <ProtectedRoute>
                       <AdminLayout><VideoManagement /></AdminLayout>
                     </ProtectedRoute>
                   } 
@@ -122,7 +122,7 @@ function App() {
                 <Route 
                   path="/admin/categories" 
                   element={
-                    <ProtectedRoute requiredRole="admin">
+                    <ProtectedRoute>
                       <AdminLayout><CategoryManagement /></AdminLayout>
                     </ProtectedRoute>
                   } 
@@ -130,7 +130,7 @@ function App() {
                 <Route 
                   path="/admin/orders" 
                   element={
-                    <ProtectedRoute requiredRole="admin">
+                    <ProtectedRoute>
                       <AdminLayout><OrderManagement /></AdminLayout>
                     </ProtectedRoute>
                   } 
@@ -138,7 +138,7 @@ function App() {
                 <Route 
                   path="/admin/delivery" 
                   element={
-                    <ProtectedRoute requiredRole="admin">
+                    <ProtectedRoute>
                       <AdminLayout><DeliveryManagement /></AdminLayout>
                     </ProtectedRoute>
                   } 
@@ -146,7 +146,7 @@ function App() {
                 <Route 
                   path="/admin/newsletter" 
                   element={
-                    <ProtectedRoute requiredRole="admin">
+                    <ProtectedRoute>
                       <AdminLayout><NewsletterManagement /></AdminLayout>
                     </ProtectedRoute>
                   } 
@@ -158,7 +158,7 @@ function App() {
           </div>
           <Toaster />
         </Router>
-      </SupabaseAuthProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

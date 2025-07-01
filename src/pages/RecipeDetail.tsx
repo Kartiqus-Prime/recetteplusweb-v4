@@ -24,11 +24,13 @@ import { useToast } from '@/hooks/use-toast';
 
 const RecipeDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: recipe, isLoading: recipeLoading } = useSupabaseRecipes().getById(id!);
-  const { data: products = [] } = useSupabaseProducts().getAll();
+  const { data: recipes = [], isLoading: recipeLoading } = useSupabaseRecipes();
+  const { data: products = [] } = useSupabaseProducts();
   const { addToCart, isAdding } = useAddToCart();
   const { toast } = useToast();
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
+
+  const recipe = recipes.find(r => r.id === id);
 
   if (recipeLoading) {
     return (

@@ -10,7 +10,9 @@ import VideoPlayer from '@/components/VideoPlayer';
 
 const VideoDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: video, isLoading } = useSupabaseVideos().getById(id!);
+  const { data: videos = [], isLoading } = useSupabaseVideos();
+  
+  const video = videos.find(v => v.id === id);
 
   if (isLoading) {
     return (

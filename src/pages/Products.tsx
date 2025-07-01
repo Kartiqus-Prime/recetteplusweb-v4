@@ -11,7 +11,7 @@ import { useAddToCart } from '@/hooks/useAddToCart';
 import { formatCFA } from '@/lib/currency';
 
 const Products = () => {
-  const { data: products = [], isLoading } = useSupabaseProducts().getAll();
+  const { data: products = [], isLoading } = useSupabaseProducts();
   const { addToCart, isAdding } = useAddToCart();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -150,7 +150,7 @@ const Products = () => {
                   {product.promotion && (
                     <div className="absolute top-2 left-2">
                       <Badge className="bg-red-500 text-white">
-                        -{product.promotion.discount}%
+                        -20%
                       </Badge>
                     </div>
                   )}
@@ -192,20 +192,9 @@ const Products = () => {
                   
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      {product.promotion ? (
-                        <div>
-                          <span className="text-lg font-bold text-orange-500">
-                            {formatCFA(product.price)}
-                          </span>
-                          <span className="text-sm text-gray-500 line-through ml-2">
-                            {formatCFA(product.promotion.originalPrice)}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-lg font-bold text-orange-500">
-                          {formatCFA(product.price)}
-                        </span>
-                      )}
+                      <span className="text-lg font-bold text-orange-500">
+                        {formatCFA(product.price)}
+                      </span>
                       <p className="text-xs text-gray-500">par {product.unit}</p>
                     </div>
                   </div>
